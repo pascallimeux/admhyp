@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block title %}Local page{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+<div id="radios1" class="btn-group view-opt-btn-group" data-toggle="buttons-radio">
+    <button type="button" class="btn active" name="choice1" value="A">A</button>
+    <button type="button" class="btn" name="choice1" value="B">B</button>
+    <button type="button" class="btn" name="choice1" value="C">C</button>
+    <button type="button" class="btn" name="choice1" value="D">D</button>
+    <button type="button" class="btn" name="choice1" value="E">E</button>
+    <input type="hidden" name="choice1" value={{request.form['choice1']}} />
+</div>
+{% endblock %}

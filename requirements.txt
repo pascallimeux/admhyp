@@ -1,0 +1,6 @@
+paramiko==2.2.1
+gitpython==2.1.5
+#SQLAlchemy==1.1.11
+Flask==0.12.2
+Flask-SQLAlchemy==2.2
+wtforms==2.1
