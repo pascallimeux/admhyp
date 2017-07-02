@@ -6,11 +6,8 @@ Created on 30 june 2017
 
 from app.common.services import Services
 from app.model import Orderer
-import logging
-from common.log import LOG_LEVEL, log_handler
+from common.log import logging
 logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
 from config import ServerType
 
 class OrdererServices(Services):

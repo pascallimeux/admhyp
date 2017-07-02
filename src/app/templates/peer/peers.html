@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}Peers page{% endblock %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+
+<div class="container">
+
+    <h2>peers</h2>
+    <div align="right"><a href="{{ url_for('peer_app.create') }}">add a peer</a></div>
+    hostname  status
+    {% if peers %}
+        {% for peer in peers %}
+            <li><a href = "{{ url_for('peer_app.manage', hostname=peer.hostname) }}">{{ peer.hostname }}</a>{{ peer.get_status() }}</li>
+        {% endfor %}
+    {% endif %}
+
+</div>
+
+{% endblock %}

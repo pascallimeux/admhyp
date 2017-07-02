@@ -3,15 +3,12 @@
 Created on 30 june 2017
 @author: pascal limeux
 '''
-from app.database import db_session
+from app.database import get_session
 from app.common.services import Services
-from app.model import User
-import logging
-from common.log import LOG_LEVEL, log_handler
+from app.login.model import User
+from common.log import logging
 logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
-from common.hashpwd import hash_password, check_password
+from app.common.hashpwd import hash_password, check_password
 
 class UserServices(Services):
 
@@ -26,9 +23,9 @@ class UserServices(Services):
     def CheckUser(self, username, password):
         if username == None or password == None:
             raise MissingParametersException()
-        rows = db_session.query(User).filter(User.username == username).count()
+        rows = get_session().query(User).filter(User.username == username).count()
         if rows == 1:
-            user = db_session.query(User).filter(User.username == username)[0]
+            user = get_session().query(User).filter(User.username == username)[0]
             if check_password(user.password, password):
                 return True
         return False

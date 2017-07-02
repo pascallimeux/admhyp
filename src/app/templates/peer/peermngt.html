@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block title %}Peer managment page{% endblock %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+
+<div class="container">
+    {% if peer %}
+        <h2>peer hostname: {{ peer.hostname }}  {{ peer.get_status() }}</h2>
+        <div><input type="back" class="btn btn-primary"  value="Deploy" onclick="window.location='{{ url_for('peer_app.deploy', hostname=peer.hostname) }}';" /></div><br>
+        <div><input type="back" class="btn btn-primary"  value="Start" onclick="window.location='{{ url_for('peer_app.start', hostname=peer.hostname) }}';" /></div><br>
+        <div><input type="back" class="btn btn-primary"  value="Stop" onclick="window.location='{{ url_for('peer_app.stop', hostname=peer.hostname) }}';" /></div><br>
+        <div align="right"><input type="back" class="btn btn-primary"  value="Back" onclick="window.location='{{ url_for('peer_app.list') }}';" /></div>
+    {% endif %}
+</div>
+
+{% endblock %}

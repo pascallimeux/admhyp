@@ -1,22 +1,22 @@
-from app.database import db_session, init_db
-from common.log import LOG_LEVEL, log_handler
-import logging
+from app.database import get_session, init_db
+from common.log import logging
 logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
 
 
 class MissingParametersException(Exception):
+    pass
+
+class ObjectNotFoundException(Exception):
     pass
 
 class Services():
 
     def SaveRecord(self, obj):
         try:
-            db_session.add(obj)
-            db_session.commit()
+            get_session().add(obj)
+            get_session().commit()
         except Exception as e:
-            db_session.rollback()
+            get_session().rollback()
             logger.error("{0}".format(e))
             raise e
 

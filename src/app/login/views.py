@@ -4,14 +4,9 @@ Created on 29 june 2017
 @author: pascal limeux
 '''
 
-import config
-
-from app.database import db_session
-from common.log import logging, LOG_LEVEL, log_handler
+from common.log import logging
 logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
-from flask import flash, render_template, request, session, Blueprint
+from flask import flash, render_template, request, session, Blueprint, Response
 from app.login.forms import LoginForm
 from app.login.services import UserServices
 
@@ -23,7 +18,7 @@ login_app = Blueprint('login_app',__name__)
 def home():
     logger.debug("home page started")
     if not session.get('logged_in'):
-        return render_template('login.html')
+        return render_template('login/login.html')
     else:
         return render_template('home.html')
 
@@ -36,7 +31,7 @@ def do_admin_login():
             session['logged_in'] = True
             return home()
         else:
-            return not_authorized()
+            return render_template('401.html')
     except Exception as e:
         logger.error(e)
         flash('wrong password!')
@@ -69,12 +64,6 @@ def register():
         else:
             flash('Error: All the form fields are required. ')
 
-    return render_template('register.html', form=form)
+    return render_template('login/register.html', form=form)
 
-@login_app.errorhandler(404)
-def not_found():
-    return render_template('404.html'), 404
 
-@login_app.errorhandler(401)
-def not_authorized():
-    return render_template('401.html'), 401

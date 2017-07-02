@@ -4,22 +4,19 @@ Created on 29 june 2017
 @author: pascal limeux
 '''
 
-from common.log import logging, LOG_LEVEL, log_handler
-from app.common.views import Check_authorized_access
 from flask import Flask, flash, redirect, render_template, request, session, abort
-from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
 from flask import Blueprint
-from rcmd import CreateRemoteAdmin
-from nodeManager import NodeManager
 from app.peer.forms import PeerForm
+from app.peer.services import PeerServices
+from common.log import logging
 logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
 
 peer_app = Blueprint('peer_app',__name__)
 
+peerService = PeerServices()
+
 @peer_app.route("/peer", methods=['GET', 'POST'])
-def peer():
+def create():
     logger.debug("{0} /peer resource invocation".format(request.method))
     form = PeerForm(request.form)
     logger.error(form.errors)
@@ -32,19 +29,64 @@ def peer():
         remotepassword=request.form['rpassword']
         try:
             logger.debug("hostname:{0} key_file:{1} pubkeyfile:{2} radmlogin:{3} rlogin:{4} rpassword:{5}".format(hostname, key_file, pub_key_file, remoteadmlogin, remotelogin, remotepassword))
-            CreateRemoteAdmin(hostname=hostname, password=remotepassword, username=remotelogin, pub_key_file=pub_key_file)
-            nodeManager = NodeManager()
-            nodeManager.CreatePeer(hostname=hostname, remoteAdmin=remoteadmlogin, key_file=key_file)
+            if not form.validate():
+                flash('Error:{}'.format(form.errors))
+            peerService.create_peer(hostname=hostname, remoteadmlogin=remoteadmlogin,  remotepassword=remotepassword, remotelogin=remotelogin, pub_key_file=pub_key_file, key_file=key_file)
+            flash("new peer created: (hostname={0})".format(hostname))
         except Exception as e:
             flash('Error: {}'.format(e))
+    return render_template('peer/peer.html', form=form)
 
-        if form.validate():
-            # Save the comment here.
-            flash(hostname + ' is now installed')
-        else:
-            flash('Error: All the form fields are required. ')
-    if session.get('logged_in'):
-        return render_template('peer.html', form=form)
-    else:
-        logger.info("Unauthorized access from ip:{}".format(request.remote_addr))
-        return render_template('401.html')
+@peer_app.route("/peers")
+def list():
+    logger.debug("{0} /listpeers resource invocation".format(request.method))
+    try:
+        peers = peerService.get_peers()
+    except Exception as e:
+        flash('Error: {}'.format(e))
+    return render_template('peer/peers.html', peers=peers)
+
+@peer_app.route("/peer/<hostname>")
+def manage(hostname):
+    logger.debug("{0} /peer/{1} resource invocation".format(request.method, hostname))
+    try:
+        peer = peerService.get_peer(hostname)
+    except Exception as e:
+        flash('Error: {}'.format(e))
+    return render_template('peer/peermngt.html', peer=peer)
+
+@peer_app.route("/peer/<hostname>/deploy")
+def deploy(hostname):
+    logger.debug("{0} /peer/{1}/deploy resource invocation".format(request.method, hostname))
+    try:
+        peers = peerService.deploy(hostname)
+        logger.debug("peers:{}".format(peers))
+        for peer in peers:
+            logger.debug("peer: {}".format(peer.hostname))
+    except Exception as e:
+        flash('Error: {}'.format(e))
+    return render_template('peer/peers.html', peers=peers)
+
+@peer_app.route("/peer/<hostname>/start")
+def start(hostname):
+    logger.debug("{0} /peer/{1}/start resource invocation".format(request.method, hostname))
+    try:
+        peers = peerService.start(hostname)
+        logger.debug("peers:{}".format(peers))
+        for peer in peers:
+            logger.debug("peer: {}".format(peer.hostname))
+    except Exception as e:
+        flash('Error: {}'.format(e))
+    return render_template('peer/peers.html', peers=peers)
+
+@peer_app.route("/peer/<hostname>/stop")
+def stop(hostname):
+    logger.debug("{0} /peer/{1}/stop resource invocation".format(request.method, hostname))
+    try:
+        peers = peerService.stop(hostname)
+        logger.debug("peers:{}".format(peers))
+        for peer in peers:
+            logger.debug("peer: {}".format(peer.hostname))
+    except Exception as e:
+        flash('Error: {}'.format(e))
+    return render_template('peer/peers.html', peers=peers)

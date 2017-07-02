@@ -51,7 +51,7 @@ class Ssh:
     def ConnectFromKey(self):
         try:
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.client.connect(hostname=self.hostname, username=self.username, key_filename=self.key_file, timeout=SSHCNXTIMEOUT)
+            self.client.connect(hostname=self.hostname, username=self.username, key_filename=self.key_file, timeout=config.SSHCNXTIMEOUT)
         except Exception as e:
             logger.error(e)
             raise Exception("fail connection: {0} with private key {1}".format(self.hostname, self.key_file))

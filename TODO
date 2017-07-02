@@ -1,0 +1,20 @@
+
+
+
+
+etudier configuration pour CA/orderer/peer/cluster
+coder /peer/orderer/ca/cluster
+coder les commandes localess
+
+
+
+
+
+configurer docker  / gunicorn
+separer les constantes de config.py et constants.py
+resourdre le probleme de logs en double
+revoir les noms des functions et methodes
+Controller les logs
+ajouter des commentaires
+ajouter header pour chaque fichier
+ajouter des tests unitaires

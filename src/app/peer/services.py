@@ -4,34 +4,55 @@ Created on 30 june 2017
 @author: pascal limeux
 '''
 
-from app.common.services import Services
-from app.model import Peer
-import logging
-from common.log import LOG_LEVEL, log_handler
+from app.common.services import Services, ObjectNotFoundException
+from app.peer.model import Peer
+from app.database import get_session
+from common.log import logging
 logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
-from config import ServerType
-
+from app.common.constants import NodeType
+from core.remotecommands import create_remote_admin, check_ssh_admin_connection
 class PeerServices(Services):
 
-    def CreatePeer(self, hostname, login, key_file):
+    def create_peer(self, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
         try:
-            peer = Peer(hostname=hostname, type=ServerType.PEER, login=login, key_file=key_file )
-            self.__saveRecord(peer)
+            create_remote_admin(hostname=hostname, password=remotepassword, username=remotelogin, pub_key_file=pub_key_file, adminusername=remoteadmlogin)
+            if not check_ssh_admin_connection(hostname=hostname, remoteadminlogin=remoteadmlogin, key_file=key_file):
+                raise Exception()
         except Exception as e:
-            self.db_session.rollback()
+            logger.error(e)
+            raise Exception("Create remote admin failled!")
+        try:
+            peer = Peer(hostname=hostname, type=NodeType.PEER, login=remoteadmlogin, key_file=key_file )
+            self.SaveRecord(peer)
+        except Exception as e:
+            get_session().rollback()
             logger.error("{0}".format(e))
+            raise Exception ("Data not record, database error!")
+
         return peer
 
-    def RemovePeer(self, hostname):
-        objs = self.db_session.query(Peer).filter(Peer.hostname==hostname)
+    def remove_peer(self, hostname):
+        objs = self.get_session().query(Peer).filter(Peer.hostname==hostname)
         ret = objs.delete()
-        self.db_session.commit()
+        get_session().commit()
         return ret
 
-    def getPeer(self, hostname):
-        return Peer.query.filter(Peer.hostname == hostname).first()
+    def get_peer(self, hostname):
+        peer = Peer.query.filter(Peer.hostname == hostname).first()
+        if peer == None:
+            raise ObjectNotFoundException()
+        logger.debug(peer)
+        return peer
 
-    def getPeers(self):
+    def get_peers(self):
         return Peer.query.all()
+
+
+    def stop(self, hostname):
+        pass
+
+    def start(self, hostname):
+        pass
+
+    def deploy(self, hostname):
+        pass

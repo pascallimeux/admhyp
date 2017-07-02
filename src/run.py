@@ -6,7 +6,7 @@ Created on 22 june 2017
 
 import logging
 from common.log import LOG_LEVEL, log_handler
-from app import create_application
+from app import app
 #from serverManager import ServerManager
 #from rcmd import CreateRemoteAdmin
 #from server import Server
@@ -14,8 +14,6 @@ from app import create_application
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
 logger.addHandler(log_handler)
-
-app = create_application('config')
 
 def user_is_logged_in():
     return True
