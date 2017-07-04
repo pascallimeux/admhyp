@@ -7,7 +7,7 @@ import config
 import logging
 from common.ssh import Ssh
 from common.log import get_logger
-logger = get_logger(__name__)
+logger = get_logger()
 
 class Node:
 

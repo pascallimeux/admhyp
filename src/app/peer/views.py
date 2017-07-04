@@ -9,7 +9,7 @@ from flask import Blueprint
 from app.peer.forms import PeerForm
 from app.peer.services import PeerServices
 from common.log import get_logger
-logger = get_logger(__name__)
+logger = get_logger()
 from app.login.views import login_required
 
 

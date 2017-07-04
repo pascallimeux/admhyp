@@ -7,7 +7,7 @@ Created on 22 june 2017
 from common.ssh import Ssh
 from config import appconf
 from common.log import get_logger
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 def create_remote_admin(hostname, password, username=appconf().REMOTEUSERNAME, pub_key_file=appconf().PUBKEYFILE, adminusername=appconf().USERADM):

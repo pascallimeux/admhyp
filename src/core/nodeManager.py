@@ -8,7 +8,7 @@ import config, logging
 from core.rcmd import CreateRemoteAdmin
 from core.node import Peer, Orderer, Ca
 from common.log import get_logger
-logger = get_logger(__name__)
+logger = get_logger()
 
 class Singleton(type):
     _instances = {}

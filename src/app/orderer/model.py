@@ -7,7 +7,7 @@ from sqlalchemy import Column, String, ForeignKey, Date
 from app.node.model import Node
 from app.common.constants import NodeType
 from common.log import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class Orderer(Node):

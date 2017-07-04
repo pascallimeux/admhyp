@@ -3,21 +3,7 @@ from subprocess import Popen, call, PIPE, STDOUT
 import os, sys
 import argparse
 
-class Rara(object):
-    VAR2="TITI"
-class Riri(Rara):
-    VAR1="TOTO"
 
-def appconf():
-    args = 'tt.DevelopmentConfig'.split(".")
-    module = args[0]
-    classname = args[1]
-    return getattr(__import__(module), classname)
-
-    args = 'tt.DevelopmentConfig'.split(".")
-    module = args[0]
-    classname = args[1]
-    instance = getattr(__import__(module), classname)
 
 class BaseConfig(object):
     """Base configuration."""
@@ -54,9 +40,6 @@ def get_arguments(argv):
     return args
 
 
-def get_class():
-    return lambda x: globals()['Riri']
-
 
 def test_process(cmd):
     cmd = cmd.strip(" ")
@@ -87,17 +70,5 @@ def mem():
     print ("ERR: {}".format(err))
 
 if __name__ == "__main__":
-
-    args = 'tt.DevelopmentConfig'.split(".")
-    module = args[0]
-    classname = args[1]
-    print (args)
-    print ("module:{0} classname:{1}".format(module, classname))
-    instance = getattr(__import__(module), classname)
-
-
-   # module = __import__(".")
-   # class_ = getattr(module, "tt.Riri")
-   # instance = class_()
-    print (appconf().SQLALCHEMY_DATABASE_URI)
+    pass
 

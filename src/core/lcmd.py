@@ -10,7 +10,7 @@ import logging
 from subprocess import Popen, call, PIPE, STDOUT
 from src.common.log import *
 from common.log import get_logger
-logger = get_logger(__name__)
+logger = get_logger()
 
 # used to display download progress for git commands
 class Progress(remote.RemoteProgress):

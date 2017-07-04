@@ -5,8 +5,8 @@ Created on 29 june 2017
 '''
 
 from common.log import get_logger
-logger = get_logger(__name__)
-from flask import flash, Blueprint, session, g, request, redirect, url_for, render_template
+logger = get_logger()
+from flask import flash, Blueprint, session, g, request, redirect, url_for, render_template, Response
 from app.login.forms import LoginForm
 from app.login.services import UserServices
 from functools import wraps
@@ -18,7 +18,8 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get('logged_in'):
-            return redirect(url_for('login_app.home', next=request.url))
+            logger.info("Unhauthorized access from: {}".format(request.remote_addr))
+            return render_template('errors/401.html'), 401
         return f(*args, **kwargs)
     return decorated_function
 
@@ -39,7 +40,8 @@ def login():
             session['logged_in'] = True
             return home()
         else:
-            return render_template('errors/401.html')
+            logger.info("Unhauthorized access from: {}".format(request.remote_addr))
+            return render_template('errors/401.html'), 401
     except Exception as e:
         logger.error(e)
         flash('wrong password!')

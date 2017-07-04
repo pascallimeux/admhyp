@@ -8,7 +8,7 @@ from app.common.services import Services, ObjectNotFoundException
 from app.peer.model import Peer
 from app.database import get_session
 from common.log import get_logger
-logger = get_logger(__name__)
+logger = get_logger()
 from app.common.constants import NodeType
 from core.remotecommands import create_remote_admin, check_ssh_admin_connection
 class PeerServices(Services):

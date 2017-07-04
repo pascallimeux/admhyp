@@ -1,0 +1,36 @@
+INFO - 07-04 18:51:16 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 -  * Restarting with stat
+INFO - 07-04 18:51:17 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/run.py - l25 - Start application in dev mode
+WARNING - 07-04 18:51:17 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 -  * Debugger is active!
+INFO - 07-04 18:51:17 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 -  * Debugger PIN: 247-909-473
+INFO - 07-04 18:51:17 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/login/views.py - l21 - Unhauthorized access from: 192.168.20.122
+DEBUG - 07-04 18:51:18 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/login/views.py - l53 - logout
+DEBUG - 07-04 18:51:18 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/login/views.py - l28 - home page started
+INFO - 07-04 18:51:18 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 - 192.168.20.122 - - [04/Jul/2017 18:51:18] "GET /logout HTTP/1.1" 200 -
+INFO - 07-04 18:51:18 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/login/views.py - l21 - Unhauthorized access from: 192.168.20.122
+DEBUG - 07-04 18:51:18 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/login/views.py - l53 - logout
+DEBUG - 07-04 18:51:18 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/login/views.py - l28 - home page started
+INFO - 07-04 18:51:18 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 - 192.168.20.122 - - [04/Jul/2017 18:51:18] "GET /logout HTTP/1.1" 200 -
+INFO - 07-04 18:51:35 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/login/views.py - l21 - Unhauthorized access from: 192.168.20.122
+DEBUG - 07-04 18:51:35 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/peer/views.py - l23 - GET /peer resource invocation
+ERROR - 07-04 18:51:35 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/peer/views.py - l25 - {}
+INFO - 07-04 18:51:35 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 - 192.168.20.122 - - [04/Jul/2017 18:51:35] "GET /peer HTTP/1.1" 200 -
+INFO - 07-04 18:51:49 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/run.py - l31 - Stop application...
+INFO - 07-04 18:51:52 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/run.py - l25 - Start application in dev mode
+INFO - 07-04 18:51:52 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 -  * Running on http://0.0.0.0:4000/ (Press CTRL+C to quit)
+INFO - 07-04 18:51:52 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 -  * Restarting with stat
+INFO - 07-04 18:51:53 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/run.py - l25 - Start application in dev mode
+WARNING - 07-04 18:51:53 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 -  * Debugger is active!
+INFO - 07-04 18:51:53 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 -  * Debugger PIN: 247-909-473
+INFO - 07-04 18:51:56 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/login/views.py - l21 - Unhauthorized access from: 192.168.20.122
+DEBUG - 07-04 18:51:56 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/peer/views.py - l23 - GET /peer resource invocation
+ERROR - 07-04 18:51:56 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/peer/views.py - l25 - {}
+INFO - 07-04 18:51:56 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 - 192.168.20.122 - - [04/Jul/2017 18:51:56] "GET /peer HTTP/1.1" 200 -
+INFO - 07-04 18:52:13 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 -  * Detected change in '/opt/gopath/src/github.com/pascallimeux/admhyp/src/app/login/views.py', reloading
+INFO - 07-04 18:52:13 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/run.py - l31 - Stop application...
+INFO - 07-04 18:52:13 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 -  * Restarting with stat
+INFO - 07-04 18:52:14 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/run.py - l25 - Start application in dev mode
+WARNING - 07-04 18:52:14 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 -  * Debugger is active!
+INFO - 07-04 18:52:14 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 -  * Debugger PIN: 247-909-473
+INFO - 07-04 18:52:17 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/app/login/views.py - l21 - Unhauthorized access from: 192.168.20.122
+INFO - 07-04 18:52:17 - /opt/gopath/src/github.com/pascallimeux/admhyp/.venv/lib/python3.5/site-packages/werkzeug/_internal.py - l87 - 192.168.20.122 - - [04/Jul/2017 18:52:17] "GET /peer HTTP/1.1" 401 -
+INFO - 07-04 19:03:32 - /opt/gopath/src/github.com/pascallimeux/admhyp/src/run.py - l31 - Stop application...

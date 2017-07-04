@@ -6,7 +6,7 @@ Created on 28 june 2017
 
 from app.login.services import UserServices
 from common.log import get_logger
-logger = get_logger(__name__)
+logger = get_logger()
 
 if __name__ == "__main__":
     userServices = UserServices()

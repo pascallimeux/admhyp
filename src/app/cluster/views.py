@@ -7,7 +7,7 @@ Created on 29 june 2017
 
 from flask import request, Blueprint, session, render_template
 from common.log import get_logger
-logger = get_logger(__name__)
+logger = get_logger()
 from app.login.views import login_required
 
 

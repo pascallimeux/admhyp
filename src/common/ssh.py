@@ -7,7 +7,7 @@ Created on 22 june 2017
 import paramiko
 from config import appconf
 from common.log import get_logger
-logger = get_logger(__name__)
+logger = get_logger()
 
 # used to display paramiko logs
 #logging.getLogger("paramiko").setLevel(logging.DEBUG)

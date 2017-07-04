@@ -14,7 +14,7 @@ from config import appconf
 from app import app
 
 from common.log import get_logger
-logger = get_logger(__name__)
+logger = get_logger()
 
 def user_is_logged_in():
     return True

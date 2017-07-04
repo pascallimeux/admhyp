@@ -5,8 +5,10 @@ Created on 3 july 2017
 '''
 
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from app.database import get_session
+from common.log import get_logger
+logger = get_logger()
 
 app = Flask(__name__, static_folder='static', template_folder="templates")
 app_settings = os.getenv('APP_SETTINGS', 'config.DevelopmentConfig')
@@ -35,6 +37,7 @@ app.register_blueprint(peer_app)
 
 @app.errorhandler(401)
 def not_authorized(error):
+    logger.info("Unhauthorized access from: {}".format(request.remote_addr))
     return render_template('errors/401.html'), 401
 
 @app.errorhandler(403)
@@ -43,6 +46,7 @@ def forbidden_page(error):
 
 @app.errorhandler(404)
 def page_not_found(error):
+    logger.info("Page not found")
     return render_template('errors/404.html'), 404
 
 @app.errorhandler(500)
