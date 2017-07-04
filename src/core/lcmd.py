@@ -9,10 +9,8 @@ from git import Repo, Git, remote
 import logging
 from subprocess import Popen, call, PIPE, STDOUT
 from src.common.log import *
-from common.constants import *
-logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
+from common.log import get_logger
+logger = get_logger(__name__)
 
 # used to display download progress for git commands
 class Progress(remote.RemoteProgress):
@@ -24,6 +22,7 @@ def SetupHyperledger():
     CreateBinaries()
     CreateDockerImages()
     BuildTarBall()
+
 
 def ExecSystemCmd(cmd):
     #cmd = cmd.strip(" ")
@@ -106,3 +105,4 @@ def CreateConfigTx():
 
 def CreateMSP(self, nodeName):
     logger.info ("Create MSP in {}".format(self.hostname))
+

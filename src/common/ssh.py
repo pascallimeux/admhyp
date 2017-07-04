@@ -4,13 +4,10 @@ Created on 22 june 2017
 @author: pascal limeux
 '''
 
-import paramiko, os
-import logging
-import config
-from common.log import *
-logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
+import paramiko
+from config import appconf
+from common.log import get_logger
+logger = get_logger(__name__)
 
 # used to display paramiko logs
 #logging.getLogger("paramiko").setLevel(logging.DEBUG)
@@ -22,7 +19,7 @@ class BadParamersException(Exception):
 class Ssh:
     client = None
 
-    def __init__(self, hostname, username=config.USERADM, port=config.SSHDEFAULTPORT, password=None, key_file=None):
+    def __init__(self, hostname, username=appconf().USERADM, port=appconf().SSHDEFAULTPORT, password=None, key_file=None):
         logger.debug("SSH connection to {0}@{1}".format(username, hostname) )
         if (hostname == None or username == None or (password == None and key_file == None)):
             logger.error ("Error to init ssh, missing mandatory parameter!")

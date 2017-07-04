@@ -5,23 +5,19 @@ box-sizing: border-box;
 *:focus {
 	outline: none;
 }
-body {
-font-family: Arial;
-background-color: #3498DB;
-padding: 50px;
-}
 
 .login {
 margin: 20px auto;
 width: 300px;
 }
+
 .login-screen {
 background-color: #FFF;
 padding: 20px;
 border-radius: 5px
 }
 
-.app-title {
+.app-title-login {
 text-align: center;
 color: #777;
 }
@@ -29,11 +25,12 @@ color: #777;
 .login-form {
 text-align: center;
 }
-.control-group {
+
+.control-group-login {
 margin-bottom: 10px;
 }
 
-input {
+.login-field {
 text-align: center;
 background-color: #ECF0F1;
 border: 2px solid transparent;
@@ -45,12 +42,12 @@ width: 250px;
 transition: border .5s;
 }
 
-input:focus {
+.login-field:focus {
 border: 2px solid #3498DB;
 box-shadow: none;
 }
 
-.btn {
+.btn-login {
   border: 2px solid transparent;
   background: #3498DB;
   color: #ffffff;
@@ -67,7 +64,7 @@ box-shadow: none;
   margin: 0 auto;
 }
 
-.btn:hover {
+.btn-login:hover {
 	background-color: #2980B9;
 }
 

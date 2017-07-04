@@ -6,10 +6,8 @@ Created on 26 june 2017
 import config
 import logging
 from common.ssh import Ssh
-from common.log import LOG_LEVEL, log_handler
-logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
+from common.log import get_logger
+logger = get_logger(__name__)
 
 class Node:
 

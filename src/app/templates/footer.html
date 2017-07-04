@@ -1,0 +1,12 @@
+<footer>
+  <div class="container">
+    <small>
+      <span>© <a href="mailto:pascal.limeux@orange.com">author</a></span>
+    </small>
+  </div>
+  <!-- scripts -->
+  <script src="{{url_for('static', filename='js/jquery-1.11.3.min.js')}}" type="text/javascript"></script>
+  <script src="{{url_for('static', filename='js/bootstrap.min.js')}}" type="text/javascript"></script>
+  <script src="{{url_for('static', filename='js/main.js')}}" type="text/javascript"></script>
+  {% block js %}{% endblock %}
+</footer>

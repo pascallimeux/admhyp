@@ -4,15 +4,13 @@ Created on 22 june 2017
 @author: pascal limeux
 '''
 
-import logging
 from common.ssh import Ssh
-from common.log import LOG_LEVEL, log_handler
-import config
-logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
+from config import appconf
+from common.log import get_logger
+logger = get_logger(__name__)
 
-def create_remote_admin(hostname, password, username=config.REMOTEUSERNAME, pub_key_file=config.PUBKEYFILE, adminusername=config.USERADM):
+
+def create_remote_admin(hostname, password, username=appconf().REMOTEUSERNAME, pub_key_file=appconf().PUBKEYFILE, adminusername=appconf().USERADM):
     logger.info("create a remote admin: hostname:{0}, adminusername:{1},  pub_key_file:{2}".format(hostname, adminusername, pub_key_file))
     try:
         ssh = Ssh(hostname=hostname, username=username, password=password)

@@ -5,11 +5,8 @@ Created on 28 june 2017
 '''
 
 from app.login.services import UserServices
-from common.log import logging, LOG_LEVEL, log_handler
-
-logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
+from common.log import get_logger
+logger = get_logger(__name__)
 
 if __name__ == "__main__":
     userServices = UserServices()

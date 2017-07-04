@@ -4,16 +4,17 @@ Created on 22 june 2017
 @author: pascal limeux
 '''
 
-import logging
-from common.log import LOG_LEVEL, log_handler
-from app import app
 #from serverManager import ServerManager
 #from rcmd import CreateRemoteAdmin
 #from server import Server
 #from lcmd import SetupHyperledger
-logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
+
+
+from config import appconf
+from app import app
+
+from common.log import get_logger
+logger = get_logger(__name__)
 
 def user_is_logged_in():
     return True
@@ -21,7 +22,7 @@ def user_is_logged_in():
 
 if __name__ == "__main__":
     try:
-        logger.info("Start application...")
+        logger.info("Start application in {} mode".format(appconf().APPMODE))
         app.run(host=app.config['HOST'], port=app.config['PORT'], debug=app.config['DEBUG'])
         peerHostname    = '192.168.0.106'
         caHostname      = '192.168.0.104'

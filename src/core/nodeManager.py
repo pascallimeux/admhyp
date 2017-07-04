@@ -4,13 +4,11 @@ Created on 26 june 2017
 @author: pascal limeux
 '''
 from config import NodeType
-from common.log import LOG_LEVEL, log_handler
 import config, logging
 from core.rcmd import CreateRemoteAdmin
 from core.node import Peer, Orderer, Ca
-logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(log_handler)
+from common.log import get_logger
+logger = get_logger(__name__)
 
 class Singleton(type):
     _instances = {}

@@ -5,13 +5,16 @@ Created on 29 june 2017
 '''
 
 from flask import request, Blueprint, session, render_template
-from common.log import logging
-logger = logging.getLogger(__name__)
+from common.log import get_logger
+logger = get_logger(__name__)
+from app.login.views import login_required
+
 
 local_app = Blueprint('local_app',__name__)
 
 
 @local_app.route("/local", methods=['GET', 'POST'])
+@login_required
 def local():
     logger.debug("{0} invocation on /local resource".format(request.method))
     if session.get('logged_in'):

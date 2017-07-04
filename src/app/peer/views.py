@@ -8,14 +8,17 @@ from flask import Flask, flash, redirect, render_template, request, session, abo
 from flask import Blueprint
 from app.peer.forms import PeerForm
 from app.peer.services import PeerServices
-from common.log import logging
-logger = logging.getLogger(__name__)
+from common.log import get_logger
+logger = get_logger(__name__)
+from app.login.views import login_required
+
 
 peer_app = Blueprint('peer_app',__name__)
 
 peerService = PeerServices()
 
 @peer_app.route("/peer", methods=['GET', 'POST'])
+@login_required
 def create():
     logger.debug("{0} /peer resource invocation".format(request.method))
     form = PeerForm(request.form)
@@ -38,6 +41,7 @@ def create():
     return render_template('peer/peer.html', form=form)
 
 @peer_app.route("/peers")
+@login_required
 def list():
     logger.debug("{0} /listpeers resource invocation".format(request.method))
     try:
@@ -47,6 +51,7 @@ def list():
     return render_template('peer/peers.html', peers=peers)
 
 @peer_app.route("/peer/<hostname>")
+@login_required
 def manage(hostname):
     logger.debug("{0} /peer/{1} resource invocation".format(request.method, hostname))
     try:
@@ -56,6 +61,7 @@ def manage(hostname):
     return render_template('peer/peermngt.html', peer=peer)
 
 @peer_app.route("/peer/<hostname>/deploy")
+@login_required
 def deploy(hostname):
     logger.debug("{0} /peer/{1}/deploy resource invocation".format(request.method, hostname))
     try:
@@ -68,6 +74,7 @@ def deploy(hostname):
     return render_template('peer/peers.html', peers=peers)
 
 @peer_app.route("/peer/<hostname>/start")
+@login_required
 def start(hostname):
     logger.debug("{0} /peer/{1}/start resource invocation".format(request.method, hostname))
     try:
@@ -80,6 +87,7 @@ def start(hostname):
     return render_template('peer/peers.html', peers=peers)
 
 @peer_app.route("/peer/<hostname>/stop")
+@login_required
 def stop(hostname):
     logger.debug("{0} /peer/{1}/stop resource invocation".format(request.method, hostname))
     try:

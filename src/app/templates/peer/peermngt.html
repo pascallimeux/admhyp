@@ -1,12 +1,6 @@
-{% extends "layout.html" %}
-
+{% extends "_base.html" %}
 {% block title %}Peer managment page{% endblock %}
-
-{% block head %}
-{{ super() }}
-{% endblock %}
 {% block content %}
-
 <div class="container">
     {% if peer %}
         <h2>peer hostname: {{ peer.hostname }}  {{ peer.get_status() }}</h2>
@@ -16,5 +10,4 @@
         <div align="right"><input type="back" class="btn btn-primary"  value="Back" onclick="window.location='{{ url_for('peer_app.list') }}';" /></div>
     {% endif %}
 </div>
-
 {% endblock %}

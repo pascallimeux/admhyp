@@ -1,6 +1,6 @@
 from app.database import get_session, init_db
-from common.log import logging
-logger = logging.getLogger(__name__)
+from common.log import get_logger
+logger = get_logger(__name__)
 
 
 class MissingParametersException(Exception):

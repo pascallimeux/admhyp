@@ -6,8 +6,8 @@ Created on 30 june 2017
 from sqlalchemy import Column, String, ForeignKey, Date
 from app.node.model import Node
 from app.common.constants import NodeType
-from common.log import logging
-logger = logging.getLogger(__name__)
+from common.log import get_logger
+logger = get_logger(__name__)
 
 
 class Ca(Node):

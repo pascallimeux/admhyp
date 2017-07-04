@@ -6,8 +6,8 @@ Created on 30 june 2017
 
 from app.common.services import Services
 from app.model import Orderer
-from common.log import logging
-logger = logging.getLogger(__name__)
+from common.log import get_logger
+logger = get_logger(__name__)
 from config import ServerType
 
 class OrdererServices(Services):

@@ -6,8 +6,6 @@ Created on 30 june 2017
 from app.database import get_session
 from app.common.services import Services
 from app.login.model import User
-from common.log import logging
-logger = logging.getLogger(__name__)
 from app.common.hashpwd import hash_password, check_password
 
 class UserServices(Services):

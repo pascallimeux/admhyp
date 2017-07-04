@@ -6,13 +6,16 @@ Created on 29 june 2017
 
 
 from flask import request, Blueprint, session, render_template
-from common.log import logging
-logger = logging.getLogger(__name__)
+from common.log import get_logger
+logger = get_logger(__name__)
+from app.login.views import login_required
+
 
 cluster_app = Blueprint('cluster_app',__name__)
 
 
 @cluster_app.route("/cluster", methods=['GET', 'POST'])
+@login_required
 def cluster():
     logger.debug("{0} invocation on /cluster resource".format(request.method))
     if session.get('logged_in'):

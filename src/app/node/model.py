@@ -9,8 +9,8 @@ from app.database import Base
 from app.common.constants import NodeStatus
 from core.remotecommands import check_ssh_admin_connection
 import datetime
-from common.log import logging
-logger = logging.getLogger(__name__)
+from common.log import get_logger
+logger = get_logger(__name__)
 
 
 class Node(Base):
