@@ -36,10 +36,10 @@ def check_ssh_admin_connection(hostname, remoteadminlogin, key_file):
     try:
         ssh = Ssh(hostname=hostname, username=remoteadminlogin, key_file=key_file)
         out, err = ssh.ExecCmd("ls ", sudo=True)
-        if err != "":
+        logger.debug("out:{0}  err: {1}".format(out, err))
+        if err.strip() != "":
             return False
-        if out != "":
-            return True
+        return True
     except Exception as e:
         logger.error(e)
         return False

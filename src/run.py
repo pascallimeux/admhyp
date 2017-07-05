@@ -10,6 +10,9 @@ Created on 22 june 2017
 #from lcmd import SetupHyperledger
 
 
+import argparse
+parser = argparse.ArgumentParser(description='description')
+parser.add_argument('-p', '--port', type=int, help='port to expose API', required=False)
 from config import appconf
 from app import app
 
@@ -22,8 +25,14 @@ def user_is_logged_in():
 
 if __name__ == "__main__":
     try:
-        logger.info("Start application in {} mode".format(appconf().APPMODE))
-        app.run(host=app.config['HOST'], port=app.config['PORT'], debug=app.config['DEBUG'])
+        args = parser.parse_args()
+        port = args.port
+        if port == None:
+            port=app.config['PORT']
+        host = app.config['HOST']
+
+        logger.info("Start application in {0} mode, hostname:{1}:{2}".format(appconf().APPMODE, host, port))
+        app.run(host=host, port=port, debug=app.config['DEBUG'])
         peerHostname    = '192.168.0.106'
         caHostname      = '192.168.0.104'
         ordererHostname = '192.168.0.108'

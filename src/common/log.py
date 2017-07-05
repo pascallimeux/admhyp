@@ -19,9 +19,9 @@ def get_logger():
     return logger
 
 def configure_log():
-    logger = logging.getLogger()
+    logger = logging.getLogger("admhyp")
     #formatter = logging.Formatter("[%(asctime)s] %(levelname)s [%(name)s] [%(filename)s:%(lineno)s %(funcName)20s()] - %(message)s")
-    console_formatter = logging.Formatter('%(levelname)s\t%(filename)s:%(lineno)d\t\t%(message)s', '%m-%d %H:%M:%S')
+    console_formatter = logging.Formatter('%(levelname)s\t%(filename)s:%(lineno)d\t\t  %(asctime)s "%(message)s"')
     file_formatter = logging.Formatter('%(levelname)s - %(asctime)s - %(pathname)s - l%(lineno)d - %(message)s', '%m-%d %H:%M:%S')
 
     console_handler = logging.StreamHandler()

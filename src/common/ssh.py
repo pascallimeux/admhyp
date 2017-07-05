@@ -40,15 +40,16 @@ class Ssh:
     def ConnectFromLP(self):
         try:
             self.client.load_system_host_keys()
-            self.client.connect(self.hostname, self.port, self.username, self.password, timeout=config.SSHCNXTIMEOUT)
+            self.client.connect(self.hostname, self.port, self.username, self.password, timeout=appconf().SSHCNXTIMEOUT)
         except Exception as e:
+            logger.error("fail to connect hostname:{0} port{1} username:{2} password:{3}".format(self.hostname, self.port, self.username, self.password))
             logger.error (e)
             raise Exception ("fail connection: {0} with login/password: {1}/{2}".format(self.hostname, self.username, self.password))
 
     def ConnectFromKey(self):
         try:
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.client.connect(hostname=self.hostname, username=self.username, key_filename=self.key_file, timeout=config.SSHCNXTIMEOUT)
+            self.client.connect(hostname=self.hostname, username=self.username, key_filename=self.key_file, timeout=appconf().SSHCNXTIMEOUT)
         except Exception as e:
             logger.error(e)
             raise Exception("fail connection: {0} with private key {1}".format(self.hostname, self.key_file))
