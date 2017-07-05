@@ -3,6 +3,7 @@ MAINTAINER Pascal Limeux <pascal.limeux@orange.com>
 
 # Set env variables
 ENV GOPATH=/opt/gopath
+# select config.ProductionConfig for production
 #ENV APP_SETTINGS=config.ProductionConfig
 ENV APP_SETTINGS=config.DevelopmentConfig
 
@@ -11,7 +12,8 @@ RUN apt-get update && apt-get install -y openssh-server
 RUN apt-get install -y build-essential python-dev gcc
 RUN apt-get install -y libpq-dev libxml2-dev libxslt1-dev libldap2-dev libsasl2-dev libffi-dev
 RUN apt-get install -y nginx supervisor
-RUN apt-get install nano net-tools 
+# remove next line in production
+RUN apt-get install -y nano net-tools
 
 # Setup credentials
 RUN mkdir -p /root/.ssh && chmod 0700 /root/.ssh
