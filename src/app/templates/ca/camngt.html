@@ -1,0 +1,13 @@
+{% extends "_base.html" %}
+{% block title %}CA managment page{% endblock %}
+{% block content %}
+<div class="container">
+    {% if ca %}
+        <h2>ca hostname: {{ ca.hostname }}  {{ ca.get_status() }}</h2>
+        <div><input type="back" class="btn btn-primary"  value="Deploy" onclick="window.location='{{ url_for('ca_app.deploy', hostname=ca.hostname) }}';" /></div><br>
+        <div><input type="back" class="btn btn-primary"  value="Start" onclick="window.location='{{ url_for('ca_app.start', hostname=ca.hostname) }}';" /></div><br>
+        <div><input type="back" class="btn btn-primary"  value="Stop" onclick="window.location='{{ url_for('ca_app.stop', hostname=ca.hostname) }}';" /></div><br>
+        <div align="right"><input type="back" class="btn btn-primary"  value="Back" onclick="window.location='{{ url_for('ca_app.list') }}';" /></div>
+    {% endif %}
+</div>
+{% endblock %}

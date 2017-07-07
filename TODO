@@ -1,20 +1,97 @@
 
 
-
+etudier async et psutils
 
 etudier configuration pour CA/orderer/peer/cluster
 coder /peer/orderer/ca/cluster
-coder les commandes localess
+code channel
 
-
-
-
-
-configurer docker  / gunicorn
 separer les constantes de config.py et constants.py
-resourdre le probleme de logs en double
+
 revoir les noms des functions et methodes
 Controller les logs
 ajouter des commentaires
 ajouter header pour chaque fichier
 ajouter des tests unitaires
+
+
+recupérer les sources
+fabriquer les images docker
+fabriquer les binaires
+	├── chaintool
+	├── fabric-ca-client
+	├── fabric-ca-server
+	├── orderer
+	└── peer
+
+demarrer le fabric-ca-server:
+  fabric-ca-server start -b admin:adminpw -c ca/config.yaml
+	├── ca-cert.pem
+	├── config.yaml
+	├── fabric-ca-server.db
+	└── msp
+		└── keystore
+			└── 7f8ea17da9c46cc33d42ea579656cac680e1c3982c76a867b7b165f44232bb09_sk
+
+mettre à jour config.yaml (cf doc) info certificat et mot de passe
+effacer les autres fichiers produits
+relancer fabric-ca-server
+
+
+setupCA()
+	cd data
+	mkdir msp/ca1
+	cp conf/config.yaml ./msp/ca1
+	./bin/fabric-ca-server start -b admin:'orange2017!' -c ./msp/ca1/config.yaml
+	--> génère le certificat, la clé et la BDD du CA
+	openssl x509 -in ./msp/ca1/ca-cert.pem -text -noout
+	--> affiche le certificat du CA
+
+EnrollAdmin()
+	mkdir msp/admin
+	cp conf/fabric-ca-client-config.yaml msp/admin
+	./bin/fabric-ca-server start -b admin:'orange2017!' -c ./msp/ca1/config.yaml
+	./bin/fabric-ca-client enroll -u http://admin:'orange2017!'@localhost:7054 -c ./msp/admin/fabric-ca-client-config.yaml
+	mkdir -p ~/.fabric-ca-client
+	cp -R msp/admin/* ~/.fabric-ca-client
+
+registerNode()
+	./bin/fabric-ca-client register --id.name peer1 --id.type peer --id.affiliation org1.department1 --id.secret 'orange2017!'
+	./bin/fabric-ca-client register --id.name orderer1 --id.type peer --id.affiliation org1.department1 --id.secret 'orange2017!'
+
+enrollNode()
+	mkdir msp/peer1
+	cp conf/fabric-ca-client-config.yaml msp/peer1
+	./bin/fabric-ca-client enroll -u http://peer1:'orange2017!'@localhost:7054 -c msp/peer1/fabric-ca-client-config.yaml
+
+	mkdir msp/orderer1
+	cp conf/fabric-ca-client-config.yaml msp/orderer1
+	./bin/fabric-ca-client enroll -u http://orderer1:'orange2017!'@localhost:7054 -c msp/orderer1/fabric-ca-client-config.yaml
+
+registerUser()
+	./bin/fabric-ca-client register --id.name orangeadm --id.type user --id.affiliation org1.department1 --id.secret 'orange2017!'
+
+enrollUser()
+	mkdir msp/orangeadm
+	cp conf/fabric-ca-client-config.yaml msp/orangeadm
+	./bin/fabric-ca-client enroll -u http://orangeadm:'orange2017!'@localhost:7054 -c msp/orangeadm/fabric-ca-client-config.yaml
+
+createAdmin()
+	for all nodes:
+	mkdir msp/'node'/msp/admincerts
+	cp -R msp/'user'/msp/signcerts/* msp/'node'/msp/admincerts/
+
+createGenesisBlock
+	cp conf/configtx.yaml channel/
+	cd channel
+	update conf/configtx.yaml with consensus, peer and orderer informations
+	../bin/configtxgen -profile MPLOrgOrdererGenesis -outputBlock orderer.genesis.block
+	../bin/configtxgen -profile MPLOrgOrdererGenesis -outputBlock orderer.genesis.block -inspectBlock orderer.genesis.block
+
+createChannelConfigTransaction
+	../bin/configtxgen -profile MPLOrgChannel -channelID orange -outputCreateChannelTx orange.tx
+	../bin/configtxgen -channelID orange -profile MPLOrgOrdererGenesis -outputBlock orderer.genesis.block -inspectBlock orderer.genesis.block
+
+
+
+	

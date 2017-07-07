@@ -1,0 +1,14 @@
+{% extends "_base.html" %}
+{% block title %}CAs page{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>cas</h2>
+    <div align="right"><a href="{{ url_for('ca_app.create') }}">add a ca</a></div>
+    hostname  status
+    {% if cas %}
+        {% for ca in cas %}
+            <li><a href = "{{ url_for('ca_app.manage', hostname=ca.hostname) }}">{{ ca.hostname }}</a>{{ ca.get_status() }}</li>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

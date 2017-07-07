@@ -4,7 +4,7 @@ Created on 29 june 2017
 @author: pascal limeux
 '''
 
-from flask import Flask, flash, redirect, render_template, request, session, abort
+from flask import flash, render_template, request
 from flask import Blueprint
 from app.peer.forms import PeerForm
 from app.peer.services import PeerServices

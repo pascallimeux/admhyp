@@ -2,9 +2,7 @@ CWD=$(shell pwd)
 ENV=$(CWD)/.venv
 
 setup:
-	@ sudo apt-get update && apt-get install -y openssh-server
-	@ apt-get install -y build-essential python-dev gcc
-	@ apt-get install -y libpq-dev libxml2-dev libxslt1-dev libldap2-dev libsasl2-dev libffi-dev
+	@sh ./scripts/setup.sh
 
 cleandb:
 	@ if [ -f "./db/admhyp.db" ]; then rm -rf ./db/admhyp.db; fi
@@ -62,14 +60,15 @@ docker: cleanpyc createfolders initdb
 	@ docker images |grep admhyp
 
 start-container:
-	@ docker ps -q --filter "name=admhyp1" |grep -q . && docker stop admhyp1 && docker rm -fv admhyp1 || true
+	@ docker ps -a |grep admhyp1 && docker stop admhyp1 && docker rm -fv admhyp1 || true
 	@ docker run -d -p 8080:8080 --name admhyp1 admhyp
-
+	@ docker ps
 
 help:
 	@echo ""
 	@echo ""
 	@echo ""
+	@echo "     setup ............ Initialize system and account."
 	@echo "     init ............. Create Python env with dependencies, folders (log, db) and init DB."
 	@echo "     initenv .......... Create Python env with dependencies."
 	@echo "     initdb ........... Init sqlite DB with admin account."

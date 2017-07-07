@@ -1,0 +1,14 @@
+{% extends "_base.html" %}
+{% block title %}Orderers page{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>orderers</h2>
+    <div align="right"><a href="{{ url_for('orderer_app.create') }}">add a orderer</a></div>
+    hostname  status
+    {% if orderers %}
+        {% for orderer in orderers %}
+            <li><a href = "{{ url_for('orderer_app.manage', hostname=orderer.hostname) }}">{{ orderer.hostname }}</a>{{ orderer.get_status() }}</li>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

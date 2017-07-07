@@ -1,20 +1,12 @@
-## Generate and distribute keys
-```
-ssh-keygen
-ssh-copy-id root@centos
-ssh root@centos
-```
-
-# Create and start Python virtualenv
-```
-python3.5 -m venv .venv
-source .venv/bin/activate
-```
-# Download Python libs and list
-```
-cd admhyp
-pip3 install -r requirements.txt
-pip3 list
-```
-
-The user must have a private and public keys in ~/.ssh/id_rsa ~/.ssh/id_rsa.pub
+## Prerequisites:
+- The user must have a private and public keys in ~/.ssh/id_rsa ~/.ssh/id_rsa.pub
+- Download fabric (https://gerrit/hyperledger.org/r/fabric)
+- Dowload fabric-ca (https://gerrit/hyperledger.org/r/fabric-ca)
+- Build binaries (peer, orderer, fabric-ca-client fabric-ca-server)
+- Build docker images (zookeeper, kafka)
+- Build binaries tools (configtxgen)
+- Customize config.yaml (certificate and admin informations for CA)
+- Customize fabric-ca-client-config.yaml (certificate info for cliente "user", "admin", "peer", "orderer")
+- Customize core.yaml (configuration for PEER)
+- Customize orderer.yaml (configuration ORDERER)
+- Customize configtx.yaml (configuration genesis block)
