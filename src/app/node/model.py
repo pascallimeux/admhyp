@@ -9,7 +9,11 @@ from app.database import Base
 from app.common.constants import NodeStatus
 from core.remotecommands import check_ssh_admin_connection
 import datetime
+from common.ssh import Ssh
 from common.log import get_logger
+import abc
+
+
 logger = get_logger()
 
 
@@ -30,25 +34,74 @@ class Node(Base):
         return ("hostname={0}, type={1}, login={2}, key_file{3}, created{4}".format(self.hostname, self.type, self.login, self.key_file, self.created))
 
     def get_status(self):
+        '''Get status of the node: CREATED, NOTCONNECT, CONNECTED, DEPLOYED, UNDEPLOYED, STARTED, STOPPED  '''
         self.status =  NodeStatus.CREATED
-        if check_ssh_admin_connection(hostname=self.hostname, remoteadminlogin=self.login, key_file=self.key_file):
-            self.status =  NodeStatus.CONNECTED
-            if self.check_deployed():
+        self.connect()
+        if self.status == NodeStatus.CONNECTED:
+            if self.is_deployed():
                 self.status =  NodeStatus.DEPLOYED
-                if self.check_started():
-                    self.Status = NodeStatus.STARTED
+                if self.is_started():
+                    self.status = NodeStatus.STARTED
                 else:
-                    self.Status = NodeStatus.STOPPED
+                    self.status = NodeStatus.STOPPED
+            else:
+                self.status =  NodeStatus.UNDEPLOYED
+        else:
+            self.status = NodeStatus.NOTCONNECT
+
+        logger.info("Node:{0} Type:{1} Status:{2}".format(self.hostname, self.get_type(), self.status))
         return self.status
 
-    def check_ssh_admin_cnx(self):
+    def connect(self):
         if check_ssh_admin_connection(hostname=self.hostname, remoteadminlogin=self.login, key_file=self.key_file):
             self.status =  NodeStatus.CONNECTED
-        else:
-            self.status =  NodeStatus.NOTCONNECTED
 
-    def check_deployed(self):
+    def exec_command(self, command, sudo=False):
+        err = None
+        try:
+            ssh = Ssh(hostname=self.hostname, username=self.login, key_file=self.key_file)
+            out, err = ssh.ExecCmd(command, sudo=sudo)
+        except Exception as e:
+            logger.error(e)
+            return err
+        finally:
+            ssh.CloseConnection()
+        if err != "":
+            raise Exception (err)
+        return out, err
+
+    def upload_file(self, localFile, remoteFile):
+        try:
+            ssh = Ssh(hostname=self.hostname, username=self.login, key_file=self.key_file)
+            ssh.UploadFile(localFile, remoteFile)
+        except Exception as e:
+            logger.error(e)
+            raise e
+        finally:
+            ssh.CloseConnection()
+
+
+
+    @abc.abstractmethod
+    def is_deployed(self):
         return False
 
-    def check_started(self):
+    @abc.abstractmethod
+    def is_started(self):
         return False
+
+    @abc.abstractmethod
+    def deploy(self):
+         return
+
+    @abc.abstractmethod
+    def start(self):
+        return
+
+    @abc.abstractmethod
+    def stop(self):
+        return
+
+    @abc.abstractmethod
+    def get_type(self):
+        return

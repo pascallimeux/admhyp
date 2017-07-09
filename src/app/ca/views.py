@@ -33,7 +33,7 @@ def create():
             logger.debug("hostname:{0} key_file:{1} pubkeyfile:{2} radmlogin:{3} rlogin:{4} rpassword:{5}".format(hostname, key_file, pub_key_file, remoteadmlogin, remotelogin, remotepassword))
             if not form.validate():
                 flash('Error:{}'.format(form.errors))
-                caService.create_ca(hostname=hostname, remoteadmlogin=remoteadmlogin,  remotepassword=remotepassword, remotelogin=remotelogin, pub_key_file=pub_key_file, key_file=key_file)
+            caService.create_ca(hostname=hostname, remoteadmlogin=remoteadmlogin,  remotepassword=remotepassword, remotelogin=remotelogin, pub_key_file=pub_key_file, key_file=key_file)
             flash("new ca created: (hostname={0})".format(hostname))
         except Exception as e:
             flash('Error: {}'.format(e))
@@ -64,36 +64,30 @@ def manage(hostname):
 def deploy(hostname):
     logger.debug("{0} /ca/{1}/deploy resource invocation".format(request.method, hostname))
     try:
-        cas = caService.deploy(hostname)
-        logger.debug("cas:{}".format(cas))
-        for ca in cas:
-            logger.debug("ca: {}".format(ca.hostname))
+        ca = caService.get_ca(hostname)
+        ca.deploy()
     except Exception as e:
         flash('Error: {}'.format(e))
-    return render_template('ca/cas.html', cas=cas)
+    return render_template('ca/camngt.html', ca=ca)
 
 @ca_app.route("/ca/<hostname>/start")
 @login_required
 def start(hostname):
     logger.debug("{0} /ca/{1}/start resource invocation".format(request.method, hostname))
     try:
-        cas = caService.start(hostname)
-        logger.debug("cas:{}".format(cas))
-        for ca in cas:
-            logger.debug("ca: {}".format(ca.hostname))
+        ca = caService.get_ca(hostname)
+        ca.start()
     except Exception as e:
         flash('Error: {}'.format(e))
-    return render_template('ca/cas.html', cas=cas)
+    return render_template('ca/camngt.html', ca=ca)
 
 @ca_app.route("/ca/<hostname>/stop")
 @login_required
 def stop(hostname):
     logger.debug("{0} /ca/{1}/stop resource invocation".format(request.method, hostname))
     try:
-        cas = caService.stop(hostname)
-        logger.debug("cas:{}".format(cas))
-        for ca in cas:
-            logger.debug("ca: {}".format(ca.hostname))
+        ca = caService.get_ca(hostname)
+        ca.stop()
     except Exception as e:
         flash('Error: {}'.format(e))
-    return render_template('ca/cas.html', cas=cas)
+    return render_template('ca/camngt.html', ca=ca)

@@ -14,7 +14,7 @@ from core.remotecommands import create_remote_admin, check_ssh_admin_connection
 class CaServices(Services):
 
     def create_ca(self, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
-         try:
+        try:
             create_remote_admin(hostname=hostname, password=remotepassword, username=remotelogin,
                                 pub_key_file=pub_key_file, adminusername=remoteadmlogin)
             if not check_ssh_admin_connection(hostname=hostname, remoteadminlogin=remoteadmlogin, key_file=key_file):
@@ -47,11 +47,3 @@ class CaServices(Services):
     def get_cas(self):
         return Ca.query.all()
 
-    def stop(self, hostname):
-        pass
-
-    def start(self, hostname):
-        pass
-
-    def deploy(self, hostname):
-        pass

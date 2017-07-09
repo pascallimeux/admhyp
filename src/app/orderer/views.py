@@ -34,7 +34,7 @@ def create():
             logger.debug("hostname:{0} key_file:{1} pubkeyfile:{2} radmlogin:{3} rlogin:{4} rpassword:{5}".format(hostname, key_file, pub_key_file, remoteadmlogin, remotelogin, remotepassword))
             if not form.validate():
                 flash('Error:{}'.format(form.errors))
-                ordererService.create_orderer(hostname=hostname, remoteadmlogin=remoteadmlogin,  remotepassword=remotepassword, remotelogin=remotelogin, pub_key_file=pub_key_file, key_file=key_file)
+            ordererService.create_orderer(hostname=hostname, remoteadmlogin=remoteadmlogin,  remotepassword=remotepassword, remotelogin=remotelogin, pub_key_file=pub_key_file, key_file=key_file)
             flash("new orderer created: (hostname={0})".format(hostname))
         except Exception as e:
             flash('Error: {}'.format(e))

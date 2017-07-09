@@ -52,7 +52,7 @@ class BaseConfig(object):
     SECRET_KEY = '123456789'
     DEBUG = False
     TESTING = False
-    HOST='0.0.0.0'
+    HOST=None
     PORT=4000
     KEYFILE = os.getenv('HOME') + '/.ssh/id_rsa'
     PUBKEYFILE = os.getenv('HOME') + '/.ssh/id_rsa.pub'

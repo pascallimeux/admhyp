@@ -2,8 +2,32 @@
 from subprocess import Popen, call, PIPE, STDOUT
 import os, sys
 import argparse
+import  os, string
 
+def get_local_ip():
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    print (socket.gethostbyname(socket.gethostname()))
+    local_ip=s.connect(('google.com', 0))
+    return local_ip
 
+def check_process():
+    program = raw_input("Enter the name of the program to check: ")
+    try:
+        #perform a ps command and assign results to a list
+        output = commands.getoutput("ps -ef |grep " + program)
+        proginfo = string.split(output)
+        #display results
+        print (proginfo)
+        print ("Full path:{0}  Owner:{1} 0  Process ID:{2}  Parent process ID:{3}  Time started:{4}".format(proginfo[5], proginfo[0], proginfo[1], proginfo[2],proginfo[4]))
+    except:
+        print ("There was a problem with the program.")
+
+def getLocalIp():
+    import os
+    f = os.popen('ifconfig eth0 | grep "inet\ addr" | cut -d: -f2 | cut -d" " -f1')
+    ip=f.read()
+    return ip
 
 class BaseConfig(object):
     """Base configuration."""
@@ -68,6 +92,18 @@ def mem():
     out, err = test_process("ls -lisa")
     print ("OUT: {}".format(out))
     print ("ERR: {}".format(err))
+
+def get_external_ipaddress():
+    import urllib.request
+    extipaddr = urllib.request.urlopen('http://ident.me').read().decode('utf8')
+    return extipaddr
+
+def get_local_ipaddress():
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(('google.com', 0))
+    ipaddr=s.getsockname()[0]
+    return (ipaddr)
 
 if __name__ == "__main__":
     pass

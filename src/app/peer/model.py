@@ -14,3 +14,5 @@ class Peer(Node):
     __mapper_args__ = {
         'polymorphic_identity':NodeType.PEER,
     }
+    def get_type(self):
+        return NodeType.PEER

@@ -13,4 +13,4 @@ class Enum(set):
 
 NodeType = Enum(['PEER', 'CA', 'ORDERER'])
 
-NodeStatus = Enum(['CREATED', 'NOTCONNECT', 'CONNECTED', 'DEPLOYED', 'STARTED', 'STOPPED'])
+NodeStatus = Enum(['CREATED', 'NOTCONNECT', 'CONNECTED', 'UNDEPLOYED', 'DEPLOYED', 'STARTED', 'STOPPED'])
