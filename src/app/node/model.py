@@ -56,7 +56,7 @@ class Node(Base):
         if check_ssh_admin_connection(hostname=self.hostname, remoteadminlogin=self.login, key_file=self.key_file):
             self.status =  NodeStatus.CONNECTED
 
-    def exec_command(self, command, sudo=False):
+    def exec_command(self, command, sudo=False, checkerr=True):
         err = None
         try:
             ssh = Ssh(hostname=self.hostname, username=self.login, key_file=self.key_file)
@@ -66,7 +66,7 @@ class Node(Base):
             return err
         finally:
             ssh.CloseConnection()
-        if err != "":
+        if checkerr and err != "":
             raise Exception (err)
         return out, err
 

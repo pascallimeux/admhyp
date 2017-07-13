@@ -6,7 +6,7 @@ Created on 6 july 2017
 
 
 from flask import flash, request, Blueprint, render_template
-from app.ca.forms import CaForm
+from app.ca.forms import CaForm, RegisterForm
 from app.login.views import login_required
 from app.ca.services import CaServices
 from common.log import get_logger
@@ -49,12 +49,21 @@ def list():
         flash('Error: {}'.format(e))
     return render_template('ca/cas.html', cas=cas)
 
-@ca_app.route("/ca/<hostname>")
+@ca_app.route("/ca/<hostname>", methods=['GET', 'POST'])
 @login_required
 def manage(hostname):
     logger.debug("{0} /ca/{1} resource invocation".format(request.method, hostname))
+    form = RegisterForm(request.form)
+    logger.error(form.errors)
     try:
         ca = caService.get_ca(hostname)
+        if request.method == 'POST':
+            username = request.form['username']
+            if not form.validate():
+                flash('Error:{}'.format(form.errors))
+            ca.register_user(username=username, admpwd="orange2017!")
+            flash("new user register: {0}".format(username))
+            return render_template('ca/camngt.html', form=form, ca=ca)
     except Exception as e:
         flash('Error: {}'.format(e))
     return render_template('ca/camngt.html', ca=ca)
@@ -88,6 +97,48 @@ def stop(hostname):
     try:
         ca = caService.get_ca(hostname)
         ca.stop()
+    except Exception as e:
+        flash('Error: {}'.format(e))
+    return render_template('ca/camngt.html', ca=ca)
+
+@ca_app.route("/ca/<hostname>/register", methods=['GET', 'POST'])
+@login_required
+def register(hostname):
+    logger.debug("{0} /ca/{1}/register resource invocation".format(request.method, hostname))
+    form = RegisterForm(request.form)
+    logger.error(form.errors)
+    try:
+        ca = caService.get_ca(hostname)
+        if request.method == 'POST':
+            username = request.form['username']
+            password = request.form['password']
+            if not form.validate():
+                flash('Error:{}'.format(form.errors))
+            ca.register_user(username=username, password=password)
+            flash("new user register: {0}".format(username))
+            return render_template('ca/camngt.html', form=form, ca=ca)
+    except Exception as e:
+        flash('Error: {}'.format(e))
+    return render_template('ca/camngt.html', ca=ca)
+
+
+
+@ca_app.route("/ca/<hostname>/enroll", methods=['GET', 'POST'])
+@login_required
+def enroll(hostname):
+    logger.debug("{0} /ca/{1}/enroll resource invocation".format(request.method, hostname))
+    form = RegisterForm(request.form)
+    logger.error(form.errors)
+    try:
+        ca = caService.get_ca(hostname)
+        if request.method == 'POST':
+            username = request.form['username']
+            password = request.form['password']
+            if not form.validate():
+                flash('Error:{}'.format(form.errors))
+            ca.enroll_user(username=username, password=password)
+            flash("user {0} enroll".format(username))
+            return render_template('ca/camngt.html', form=form, ca=ca)
     except Exception as e:
         flash('Error: {}'.format(e))
     return render_template('ca/camngt.html', ca=ca)

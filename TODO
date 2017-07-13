@@ -5,6 +5,7 @@ etudier async et psutils
 etudier configuration pour CA/orderer/peer/cluster
 coder /peer/orderer/ca/cluster
 code channel
+revoir les dockers et docker-compose (cf formation mougins)
 
 separer les constantes de config.py et constants.py
 

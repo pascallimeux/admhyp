@@ -13,3 +13,8 @@ class CaForm(Form):
     radmlogin = TextField('Radmlogin', validators=[validators.DataRequired()])
     rlogin = TextField('Rlogin', validators=[validators.DataRequired()])
     rpassword = TextField('Rpassword', validators=[validators.DataRequired()])
+
+
+class RegisterForm(Form):
+    username = TextField('Username', validators=[validators.DataRequired()])
+    password = TextField('Password', validators=[validators.DataRequired()])

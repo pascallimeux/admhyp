@@ -25,7 +25,7 @@ class Ca(Node):
         if self.is_deployed():
             raise Exception ("CA already deployeds!")
         self.setup_ca()
-        self.enrollAdmin()
+        #self.enrollAdmin("admin", "orange2017!")
 
     def start(self):
         logger.debug ("Start a ca:{}".format(self.hostname))
@@ -50,21 +50,22 @@ class Ca(Node):
         #out, err = self.exec_command("cd /var/hyperledger/scripts && ./is_ca_deployed.sh")
         out, err = self.exec_command("[ -f /var/hyperledger/scripts/is_ca_started.sh ] && echo True || echo False")
         if "True" in out:
-            logger.debug ("ca deployed")
+            #logger.debug ("ca deployed")
             return True
-        logger.debug ("ca not deployed")
+        #logger.debug ("ca not deployed")
         return False
 
     def is_started(self):
         logger.debug ("Check if the ca:{} is started".format(self.hostname))
         out, err = self.exec_command("cd /var/hyperledger/scripts && ./is_ca_started.sh")
         if "True" in out:
-            logger.debug ("ca started")
+            #logger.debug ("ca started")
             return True
-        logger.debug ("ca not started")
+        #logger.debug ("ca not started")
         return False
 
     def setup_ca(self):
+        logger.debug ("Setup CA")
         out, err = self.exec_command("mkdir -p /var/hyperledger/log", sudo=True)
         out, err = self.exec_command("mkdir -p /var/hyperledger/scripts", sudo=True)
         out, err = self.exec_command("mkdir -p /var/hyperledger/.msp", sudo=True)
@@ -81,9 +82,36 @@ class Ca(Node):
         self.upload_file("./data/scripts/is_ca_started.sh", "/var/hyperledger/scripts/is_ca_started.sh")
         out, err = self.exec_command("chmod u+x /var/hyperledger/fabric* /var/hyperledger/scripts/*.sh")
 
-    def enrollAdmin(self):
-        if not self.is_started():
-            raise Exception ("ca not started!")
-        out, err = self.exec_command("cd /var/hyperledger && ./fabric-ca-client enroll -u http://admin:'orange2017!'@localhost:7054 -c ./.msp/admin/fabric-ca-client-config.yaml")
-        out, err = self.exec_command("mkdir -p /home/orangeadm/.fabric-ca-client")
-        out, err = self.exec_command("cp -R /var/hyperledger/.msp/admin/* /home/orangeadm/.fabric-ca-client")
+    def enrollAdmin(self, username, password):
+        logger.debug ("Enroll Admin:{}".format(username))
+        out, err = self.exec_command("cd /var/hyperledger && ./fabric-ca-client enroll -u http://{0}:'{1}'@localhost:7054 -c .msp/admin/fabric-ca-client-config.yaml".format(username, password), checkerr=False)
+        out, err = self.exec_command("mkdir -p /home/{}/.fabric-ca-client".format(username))
+        out, err = self.exec_command("cp -R /var/hyperledger/.msp/admin/* /home/{}/.fabric-ca-client".format(username))
+        logger.debug ("{} is now enroll!".format(username))
+
+    def register_user(self, username, password):
+        logger.debug("Register user:{}".format(username))
+        out, err = self.exec_command("cd /var/hyperledger && ./fabric-ca-client register --id.name {0} --id.type user --id.affiliation org1.department1 --id.secret '{1}'".format(username, password), checkerr=False)
+        logger.debug ("{} is now register".format(username))
+
+    def register_node(self, nodename, password):
+        logger.debug("Register node:{}".format(nodename))
+        out, err = self.exec_command("cd /var/hyperledger && ./fabric-ca-client register --id.name {0} --id.type peer --id.affiliation org1.department1 --id.secret '{1}'".format(nodename, password), checkerr=False)
+        logger.debug("{} is now register".format(nodename))
+
+    def enroll_user(self, username, password):
+        logger.debug("Enroll user:{}".format(username))
+        out, err = self.exec_command("mkdir -p /var/hyperledger/.msp/{}".format(username))
+        self.upload_file("./data/conf/fabric-ca-client-config.yaml", "/var/hyperledger/.msp/{}")
+        out, err = self.exec_command("cd /var/hyperledger && ./fabric-ca-client enroll -u http://{0}:'{1}'@localhost:7054 -c .msp/{0}/fabric-ca-client-config.yaml".format(username, password), checkerr=False)
+        logger.debug("{} is now enroll".format(username))
+
+    def enroll_node(self, nodename, password):
+        logger.debug("Enroll node:{}".format(nodename))
+        out, err = self.exec_command("mkdir -p /var/hyperledger/.msp/{}".format(nodename))
+        self.upload_file("./data/conf/fabric-ca-client-config.yaml", "/var/hyperledger/.msp/{}")
+        out, err = self.exec_command("cd /var/hyperledger && ./fabric-ca-client enroll -u http://{0}:'{1}'@localhost:7054 -c .msp/{0}/fabric-ca-client-config.yaml".format(nodename, password), checkerr=False)
+        logger.debug("{} is now enroll".format(nodename))
+
+    def register_admin(self, username, admpwd):
+        pass
