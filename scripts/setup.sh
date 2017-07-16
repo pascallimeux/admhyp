@@ -30,7 +30,7 @@ function update_system(){
     sudo apt install -y curl make git openssh-server
     sudo apt install -y build-essential python-dev gcc
 	sudo apt install -y libpq-dev libxml2-dev libxslt1-dev libldap2-dev libsasl2-dev libffi-dev
-    echo -e "${GREEN}System is up date!${NC}"
+    echo -e "${GREEN}System is up to date!${NC}"
 }
 
 function create_admin_account(){

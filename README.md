@@ -1,4 +1,8 @@
 ## Prerequisites:
+- install python 3.6
+sudo add-apt-repository ppa:jonathonf/python-3.6
+sudo apt update && sudo apt install -y python3.6
+
 - The user must have a private and public keys in ~/.ssh/id_rsa ~/.ssh/id_rsa.pub
 - Download fabric (https://gerrit/hyperledger.org/r/fabric)
 - Dowload fabric-ca (https://gerrit/hyperledger.org/r/fabric-ca)

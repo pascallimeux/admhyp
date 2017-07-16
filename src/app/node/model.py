@@ -35,7 +35,7 @@ class Node(Base):
 
     def get_status(self):
         '''Get status of the node: CREATED, NOTCONNECT, CONNECTED, DEPLOYED, UNDEPLOYED, STARTED, STOPPED  '''
-        self.status =  NodeStatus.CREATED
+        self.status = NodeStatus.CREATED
         self.connect()
         if self.status == NodeStatus.CONNECTED:
             if self.is_deployed():
@@ -60,12 +60,12 @@ class Node(Base):
         err = None
         try:
             ssh = Ssh(hostname=self.hostname, username=self.login, key_file=self.key_file)
-            out, err = ssh.ExecCmd(command, sudo=sudo)
+            out, err = ssh.exec_cmd(command, sudo=sudo)
         except Exception as e:
             logger.error(e)
             return err
         finally:
-            ssh.CloseConnection()
+            ssh.close_connection()
         if checkerr and err != "":
             raise Exception (err)
         return out, err
@@ -73,14 +73,12 @@ class Node(Base):
     def upload_file(self, localFile, remoteFile):
         try:
             ssh = Ssh(hostname=self.hostname, username=self.login, key_file=self.key_file)
-            ssh.UploadFile(localFile, remoteFile)
+            ssh.upload_file(localFile, remoteFile)
         except Exception as e:
             logger.error(e)
             raise e
         finally:
             ssh.CloseConnection()
-
-
 
     @abc.abstractmethod
     def is_deployed(self):
@@ -92,7 +90,7 @@ class Node(Base):
 
     @abc.abstractmethod
     def deploy(self):
-         return
+        return
 
     @abc.abstractmethod
     def start(self):
