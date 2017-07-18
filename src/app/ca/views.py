@@ -57,13 +57,6 @@ def manage(hostname):
     logger.error(form.errors)
     try:
         ca = caService.get_ca(hostname)
-        if request.method == 'POST':
-            username = request.form['username']
-            if not form.validate():
-                flash('Error:{}'.format(form.errors))
-            ca.register_user(username=username, admpwd="orange2017!")
-            flash("new user register: {0}".format(username))
-            return render_template('ca/camngt.html', form=form, ca=ca)
     except Exception as e:
         flash('Error: {}'.format(e))
     return render_template('ca/camngt.html', ca=ca)
@@ -121,7 +114,25 @@ def register(hostname):
         flash('Error: {}'.format(e))
     return render_template('ca/camngt.html', ca=ca)
 
-
+@ca_app.route("/ca/<hostname>/createadmin", methods=['GET', 'POST'])
+@login_required
+def create_admin(hostname):
+    logger.debug("{0} /ca/{1}/createadmin resource invocation".format(request.method, hostname))
+    form = RegisterForm(request.form)
+    logger.error(form.errors)
+    try:
+        ca = caService.get_ca(hostname)
+        if request.method == 'POST':
+            username = request.form['username']
+            password = request.form['password']
+            if not form.validate():
+                flash('Error:{}'.format(form.errors))
+            ca.create_admin(username=username, password=password)
+            flash("admin created: {0}".format(username))
+            return render_template('ca/camngt.html', form=form, ca=ca)
+    except Exception as e:
+        flash('Error: {}'.format(e))
+    return render_template('ca/camngt.html', ca=ca)
 
 @ca_app.route("/ca/<hostname>/enroll", methods=['GET', 'POST'])
 @login_required

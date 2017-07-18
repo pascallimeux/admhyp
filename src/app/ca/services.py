@@ -32,18 +32,18 @@ class CaServices(Services):
         return ca
 
     def remove_ca(self, hostname):
-        objs = self.get_session().query(Ca).filter(Ca.hostname == hostname)
+        objs = self.get_session().query(Ca).filter(Ca.hostname == hostname).filter( Ca.type == NodeType.CA)
         ret = objs.delete()
         get_session().commit()
         return ret
 
     def get_ca(self, hostname):
-        ca = Ca.query.filter(Ca.hostname == hostname).first()
+        ca = Ca.query.filter(Ca.hostname == hostname).filter( Ca.type == NodeType.CA).first()
         if ca == None:
             raise ObjectNotFoundException()
         logger.debug(ca)
         return ca
 
     def get_cas(self):
-        return Ca.query.all()
+        return Ca.query.filter(Ca.type == NodeType.CA)
 

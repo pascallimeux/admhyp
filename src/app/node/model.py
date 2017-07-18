@@ -20,7 +20,7 @@ logger = get_logger()
 class Node(Base):
     __tablename__ = 'node'
     hostname = Column(String, primary_key=True)
-    type  = Column(String)
+    type  = Column(String, primary_key=True)
     login = Column(String)
     key_file = Column(String)
     is_deployed = Column(Boolean, default=False)
@@ -78,7 +78,17 @@ class Node(Base):
             logger.error(e)
             raise e
         finally:
-            ssh.CloseConnection()
+            ssh.close_connection()
+
+    def download_file(self, remoteFile, localFile):
+        try:
+            ssh = Ssh(hostname=self.hostname, username=self.login, key_file=self.key_file)
+            ssh.download_file(remoteFile, localFile)
+        except Exception as e:
+            logger.error(e)
+            raise e
+        finally:
+            ssh.close_connection()
 
     @abc.abstractmethod
     def is_deployed(self):

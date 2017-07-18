@@ -13,3 +13,7 @@ class PeerForm(Form):
     radmlogin = TextField('Radmlogin', validators=[validators.DataRequired()])
     rlogin = TextField('Rlogin', validators=[validators.DataRequired()])
     rpassword = TextField('Rpassword', validators=[validators.DataRequired()])
+
+
+class MspForm(Form):
+    cahostname = TextField('Ca_hostname', validators=[validators.DataRequired()])

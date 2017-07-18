@@ -19,7 +19,8 @@ def appconf():
 import getpass
 LOCALLOGIN = getpass.getuser()
 
-
+DEFAULTADMNAME="admin"
+DEFAULTADMPWD="orange2017!"
 
 
 # hyperledger tag version for github

@@ -1,4 +1,6 @@
 
+passer password et login pour admin hyperledger en paramétre
+vérifier les messages des exceptions
 
 etudier async et psutils
 

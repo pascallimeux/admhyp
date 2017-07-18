@@ -60,7 +60,8 @@ class Ssh:
         password = False
         if sudo:
             logger.debug ("Execute sudo command: {0} on {1}".format(command, self.hostname))
-            command = "sudo -S -p '' {0}".format(command)
+            #command = "sudo -S -p '' {0}".format(command)
+            command = "sudo -S -p '' sh -c '{0}'".format(command)
             password = self.password is not None and len(self.password) > 0
         else:
             logger.debug ("Execute command: {0} on {1}".format(command, self.hostname))

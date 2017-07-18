@@ -14,7 +14,7 @@ from core.remotecommands import create_remote_admin, check_ssh_admin_connection
 
 class OrdererServices(Services):
 
-    def create_orderer(self, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
+    def create_orderer(self, hostname, ca, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
         try:
             create_remote_admin(hostname=hostname, password=remotepassword, username=remotelogin, pub_key_file=pub_key_file, adminusername=remoteadmlogin)
             if not check_ssh_admin_connection(hostname=hostname, remoteadminlogin=remoteadmlogin, key_file=key_file):
@@ -23,7 +23,7 @@ class OrdererServices(Services):
             logger.error(e)
             raise Exception("Create remote admin failled!")
         try:
-            orderer = orderer(hostname=hostname, type=NodeType.ORDERER, login=remoteadmlogin, key_file=key_file )
+            orderer = Orderer(hostname=hostname, ca=ca, type=NodeType.ORDERER, login=remoteadmlogin, key_file=key_file )
             self.SaveRecord(orderer)
         except Exception as e:
             get_session().rollback()
@@ -33,20 +33,20 @@ class OrdererServices(Services):
         return orderer
 
     def remove_orderer(self, hostname):
-        objs = self.get_session().query(Orderer).filter(Orderer.hostname==hostname)
+        objs = self.get_session().query(Orderer).filter(Orderer.hostname==hostname).filter(Orderer.type == NodeType.ORDERER)
         ret = objs.delete()
         get_session().commit()
         return ret
 
     def get_orderer(self, hostname):
-        orderer = Orderer.query.filter(Orderer.hostname == hostname).first()
+        orderer = Orderer.query.filter(Orderer.hostname == hostname).filter(Orderer.type == NodeType.ORDERER).first()
         if orderer == None:
             raise ObjectNotFoundException()
         logger.debug(orderer)
         return orderer
 
     def get_orderers(self):
-        return Orderer.query.all()
+        return Orderer.query.filter(Orderer.type == NodeType.ORDERER)
 
 
     def stop(self, hostname):

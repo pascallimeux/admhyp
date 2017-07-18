@@ -14,6 +14,7 @@ class Orderer(Node):
     __mapper_args__ = {
         'polymorphic_identity':NodeType.ORDERER,
     }
+    ca = Column(String, ForeignKey("ca.id"))
 
     def get_type(self):
         return NodeType.ORDERER

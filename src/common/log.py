@@ -9,7 +9,7 @@ from logging.handlers import RotatingFileHandler
 from config import appconf
 
 
-logger = logging.getLogger("admhyp")
+logger = None
 
 
 def get_logger():
@@ -20,6 +20,7 @@ def get_logger():
 
 
 def configure_log():
+    logger = logging.getLogger("admhyp")
     console_formatter = logging.Formatter('%(levelname)s\t%(filename)s:%(lineno)d\t\t  %(asctime)s "%(message)s"')
     file_formatter = logging.Formatter('%(levelname)s - %(asctime)s - %(pathname)s - l%(lineno)d - %(message)s', '%m-%d %H:%M:%S')
 

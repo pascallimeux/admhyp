@@ -24,7 +24,7 @@ def SetupHyperledger():
     BuildTarBall()
 
 
-def ExecSystemCmd(cmd):
+def exec_local_cmd(cmd):
     #cmd = cmd.strip(" ")
     process = Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT)
     for line in process.stdout:
@@ -34,18 +34,18 @@ def ExecSystemCmd(cmd):
 def __buildHyperledgerRepo():
     if not os.path.exists(hyperledger_local_repo):
         logger.debug ("Create Hyperledger local repo: {0}".format(hyperledger_local_repo))
-        ExecSystemCmd("mkdir "+hyperledger_local_repo)
+        exec_local_cmd("mkdir "+hyperledger_local_repo)
 
 def CloneFabrics():
     __buildHyperledgerRepo()
     logger.debug("Clone fabric from gerrit with tag name={0}".format(tag_name))
-    ExecSystemCmd("rm -Rf "+fabric_local_repo)
+    exec_local_cmd("rm -Rf "+fabric_local_repo)
     Repo.clone_from(git_url_fabric, fabric_local_repo, progress=Progress())
     g = Git(fabric_local_repo)
     g.checkout(tag_name)
 
     logger.debug("Clone fabric-ca from gerrit with tag name={0}".format(tag_name))
-    ExecSystemCmd("rm -Rf "+fabric_ca_local_repo)
+    exec_local_cmd("rm -Rf "+fabric_ca_local_repo)
     Repo.clone_from(git_url_fabric_ca, fabric_ca_local_repo, progress=Progress())
     g = Git(fabric_ca_local_repo)
     g.checkout(tag_name)
@@ -53,56 +53,47 @@ def CloneFabrics():
 def __removeBinaries():
     logger.debug("Remove binaries...")
     cmd = "cd fabric_bin_local_repo && rm * >/dev/null 2>&1"
-    ExecSystemCmd("cd "+fabric_bin_local_repo+" ; rm * >/dev/null 2>&1")
-    ExecSystemCmd("cd "+fabric_ca_bin_local_repo+" ; rm * >/dev/null 2>&1")
-    ExecSystemCmd("cd "+binrepo+" ; rm * >/dev/null 2>&1")
+    exec_local_cmd("cd "+fabric_bin_local_repo+" ; rm * >/dev/null 2>&1")
+    exec_local_cmd("cd "+fabric_ca_bin_local_repo+" ; rm * >/dev/null 2>&1")
+    exec_local_cmd("cd "+binrepo+" ; rm * >/dev/null 2>&1")
 
 def CreateBinaries():
     #__removeBinaries()
     logger.debug("Process building fabric-ca-server binary...")
-    ExecSystemCmd("cd " + fabric_ca_local_repo + " ; make fabric-ca-server")
+    exec_local_cmd("cd " + fabric_ca_local_repo + " ; make fabric-ca-server")
 
     logger.debug("Process building fabric-ca-client binary...")
-    ExecSystemCmd("cd " + fabric_ca_local_repo + " ; make fabric-ca-client")
+    exec_local_cmd("cd " + fabric_ca_local_repo + " ; make fabric-ca-client")
 
     logger.debug("Process building orderer binary...")
-    ExecSystemCmd("cd " + fabric_local_repo + " ; make orderer")
+    exec_local_cmd("cd " + fabric_local_repo + " ; make orderer")
 
     logger.debug("Process building peer binary...")
-    ExecSystemCmd("cd " + fabric_local_repo + " ; make peer")
+    exec_local_cmd("cd " + fabric_local_repo + " ; make peer")
 
     logger.debug("Copy fabric binaries to {}".format(binrepo))
-    ExecSystemCmd("cp " + fabric_bin_local_repo +"/* " + binrepo)
+    exec_local_cmd("cp " + fabric_bin_local_repo +"/* " + binrepo)
 
     logger.debug("Copy fabric-ca binaries to {}".format(binrepo))
-    ExecSystemCmd("cp " + fabric_ca_bin_local_repo + "/* " + binrepo)
+    exec_local_cmd("cp " + fabric_ca_bin_local_repo + "/* " + binrepo)
 
 
 def CreateDockerImages():
     logger.debug("Process building zookeeper docker image...")
-    ExecSystemCmd("cd " + fabric_local_repo + " ; make zookeeper")
+    exec_local_cmd("cd " + fabric_local_repo + " ; make zookeeper")
 
     logger.debug("Process building kafka docker image...")
-    ExecSystemCmd("cd " + fabric_local_repo + " ; make kafka")
+    exec_local_cmd("cd " + fabric_local_repo + " ; make kafka")
 
     logger.debug("Save zookeeper image...")
-    ExecSystemCmd("docker save "+dockerimagerepo+"zookeeper.tar -o hyperledger/fabric-zookeeper")
+    exec_local_cmd("docker save "+dockerimagerepo+"zookeeper.tar -o hyperledger/fabric-zookeeper")
 
     logger.debug("Save kafka image...")
-    ExecSystemCmd("docker save "+dockerimagerepo+"kafka.tar -o hyperledger/fabric-kafka")
+    exec_local_cmd("docker save "+dockerimagerepo+"kafka.tar -o hyperledger/fabric-kafka")
 
 
 def BuildTarBall(repo=binrepo, tarballname=tarballnamebinaries):
     logger.debug("Build tarball : tar cvzf {0}{1} {2}*".format(tarballsrepo, tarballname, repo))
-    ExecSystemCmd("cd "+repo +" ; tar cvzf " + tarballsrepo+tarballname+"*")
+    exec_local_cmd("cd "+repo +" ; tar cvzf " + tarballsrepo+tarballname+"*")
     #ExecSystemCmd("cd repo && tar cvzf " + tarballsrepo+"/"+tarballname+" *")
-
-def CreateGenesisBlock():
-    pass
-
-def CreateConfigTx():
-    pass
-
-def CreateMSP(self, nodeName):
-    logger.info ("Create MSP in {}".format(self.hostname))
 

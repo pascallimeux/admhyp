@@ -6,11 +6,28 @@
         <h2>ca hostname: {{ ca.hostname }}  {{ ca.get_status() }}</h2>
         <div><input type="back" class="btn btn-primary"  value="Deploy" onclick="window.location='{{ url_for('ca_app.deploy', hostname=ca.hostname) }}';" /></div><br>
         <div><input type="back" class="btn btn-primary"  value="Start" onclick="window.location='{{ url_for('ca_app.start', hostname=ca.hostname) }}';" /></div><br>
-        <div><input type="back" class="btn btn-primary"  value="Enroll" onclick="window.location='{{ url_for('ca_app.enroll', hostname=ca.hostname) }}';" /></div><br>
         <div><input type="back" class="btn btn-primary"  value="Stop" onclick="window.location='{{ url_for('ca_app.stop', hostname=ca.hostname) }}';" /></div><br>
         <div align="right"><input type="back" class="btn btn-primary"  value="Back" onclick="window.location='{{ url_for('ca_app.list') }}';" /></div>
     {% endif %}
 </div>
+
+<div class="container">
+    {% if ca %}
+        <h2>Create hyperledger administrator</h2>
+        <form  action="{{ url_for('ca_app.create_admin', hostname=ca.hostname) }}" method="post" role="form">
+
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="Username" name="username" value="{{ config.DEFAULTADMNAME }}">
+                <br>
+                <label for="password">Remote password:</label>
+                <input type="password" class="form-control" id="Password" name="password" value="">
+            </div>
+            <button type="submit" class="btn btn-success">Register</button>
+        </form>
+    {% endif %}
+</div>
+
 <div class="container">
     {% if ca %}
         <h2>register a user</h2>

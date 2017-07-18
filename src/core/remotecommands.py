@@ -30,9 +30,10 @@ def create_remote_admin(hostname, password, username=appconf().REMOTEUSERNAME, p
         ssh.exec_cmd("chmod 700 /home/"+adminusername+"/.ssh", sudo=True)
         ssh.exec_cmd("chmod 600 /home/"+adminusername+"/.ssh/authorized_keys", sudo=True)
     finally:
-        ssh.CloseConnection()
+        ssh.close_connection()
 
 def check_ssh_admin_connection(hostname, remoteadminlogin, key_file):
+    ssh = None
     try:
         ssh = Ssh(hostname=hostname, username=remoteadminlogin, key_file=key_file)
         out, err = ssh.exec_cmd("ls ", sudo=True)
@@ -44,4 +45,5 @@ def check_ssh_admin_connection(hostname, remoteadminlogin, key_file):
         logger.error(e)
         return False
     finally:
-        ssh.close_connection()
+        if ssh is not None:
+            ssh.close_connection()

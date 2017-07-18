@@ -11,6 +11,8 @@ from common.log import get_logger
 logger = get_logger()
 from app.common.constants import NodeType
 from core.remotecommands import create_remote_admin, check_ssh_admin_connection
+from app.ca.services import CaServices
+
 
 class PeerServices(Services):
 
@@ -33,20 +35,20 @@ class PeerServices(Services):
         return peer
 
     def remove_peer(self, hostname):
-        objs = self.get_session().query(Peer).filter(Peer.hostname==hostname)
+        objs = self.get_session().query(Peer).filter(Peer.hostname==hostname).filter(Peer.type == NodeType.PEER)
         ret = objs.delete()
         get_session().commit()
         return ret
 
     def get_peer(self, hostname):
-        peer = Peer.query.filter(Peer.hostname == hostname).first()
+        peer = Peer.query.filter(Peer.hostname == hostname).filter(Peer.type == NodeType.PEER).first()
         if peer == None:
             raise ObjectNotFoundException()
         logger.debug(peer)
         return peer
 
     def get_peers(self):
-        return Peer.query.all()
+        return Peer.query.filter(Peer.type == NodeType.PEER)
 
 
     def stop(self, hostname):

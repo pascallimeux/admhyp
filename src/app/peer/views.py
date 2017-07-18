@@ -6,8 +6,9 @@ Created on 29 june 2017
 
 from flask import flash, render_template, request
 from flask import Blueprint
-from app.peer.forms import PeerForm
+from app.peer.forms import PeerForm, MspForm
 from app.peer.services import PeerServices
+from app.ca.services import CaServices
 from common.log import get_logger
 logger = get_logger()
 from app.login.views import login_required
@@ -16,6 +17,7 @@ from app.login.views import login_required
 peer_app = Blueprint('peer_app',__name__)
 
 peerService = PeerServices()
+caService = CaServices()
 
 @peer_app.route("/peer", methods=['GET', 'POST'])
 @login_required
@@ -23,6 +25,11 @@ def create():
     logger.debug("{0} /peer resource invocation".format(request.method))
     form = PeerForm(request.form)
     logger.error(form.errors)
+    try:
+        cas = caService.get_cas()
+    except Exception as e:
+        flash('Error: {}'.format(e))
+
     if request.method == 'POST':
         hostname=request.form['hostname']
         key_file=request.form['keyfile']
@@ -38,7 +45,7 @@ def create():
             flash("new peer created: (hostname={0})".format(hostname))
         except Exception as e:
             flash('Error: {}'.format(e))
-    return render_template('peer/peer.html', form=form)
+    return render_template('peer/peer.html', form=form, cas=cas)
 
 @peer_app.route("/peers")
 @login_required
@@ -55,10 +62,11 @@ def list():
 def manage(hostname):
     logger.debug("{0} /peer/{1} resource invocation".format(request.method, hostname))
     try:
+        cas = caService.get_cas()
         peer = peerService.get_peer(hostname)
     except Exception as e:
         flash('Error: {}'.format(e))
-    return render_template('peer/peermngt.html', peer=peer)
+    return render_template('peer/peermngt.html', peer=peer, cas=cas)
 
 @peer_app.route("/peer/<hostname>/deploy")
 @login_required
@@ -98,3 +106,25 @@ def stop(hostname):
     except Exception as e:
         flash('Error: {}'.format(e))
     return render_template('peer/peers.html', peers=peers)
+
+@peer_app.route("/peer/<hostname>/setca", methods=['GET', 'POST'])
+@login_required
+def setca (hostname):
+    logger.debug("{0} /peer/{1}/setca resource invocation".format(request.method, hostname))
+    form = MspForm(request.form)
+    logger.error(form.errors)
+    try:
+        cas = caService.get_cas()
+        peer = peerService.get_peer(hostname)
+        if request.method == 'POST':
+            ca_hostname = request.form['ca_hostname']
+            ca = caService.get_ca(ca_hostname)
+            nodename="peer_" + hostname
+            ca.register_node(nodename=nodename, password="pwd")
+            ca.enroll_node(nodename=nodename, password="pwd")
+            tgz = ca.get_msp(nodename=nodename, hostname=hostname)
+            peer.set_msp(tgz, nodename)
+            return render_template('peer/peermngt.html', form=form, peer=peer, cas=cas)
+    except Exception as e:
+        flash('Error: {}'.format(e))
+    return render_template('peer/peermngt.html', peer=peer, cas=cas)
