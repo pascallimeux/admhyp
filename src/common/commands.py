@@ -68,3 +68,17 @@ def enroll_node(username, password):
             "&& cp /var/hyperledger/conf/fabric-ca-client-config.yaml /var/hyperledger/.msp/{0} "
             "&& cd /var/hyperledger"
             "&& ./bin/ca/fabric-ca-client enroll -u http://{0}:'{1}'@localhost:7054 -c /var/hyperledger/.msp/{0}/fabric-ca-client-config.yaml ".format(username, password))
+
+def create_remote_admin(adminusername, username, pub_key):
+    sudoers_line="\""+adminusername +" ALL=(ALL:ALL) NOPASSWD:ALL\""
+    return ("useradd -m {0} -s /bin/bash "
+            "&& echo  {1} >> /home/{2}/"+"remoteadm "
+            "&& chown root.root /home/{2}/"+"remoteadm "
+            "&& mv /home/{2}/"+"remoteadm" " /etc/sudoers.d/{0} " 
+            "&& chmod ug-w /etc/sudoers.d/{0} "
+            "&& mkdir /home/{0}/.ssh "
+            "&& chmod 777 -R /home/{0}/.ssh "
+            "&& echo {3} >> /home/{0}/.ssh/authorized_keys "
+            "&& chown -R {0}.{0} /home/{0}/.ssh "
+            "&& chmod 700 /home/{0}/.ssh"
+            "&& chmod 600 /home/{0}/.ssh/authorized_keys").format(adminusername, sudoers_line, username, pub_key)

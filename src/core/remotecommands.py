@@ -5,11 +5,12 @@ Created on 22 june 2017
 '''
 
 from common.ssh import Ssh
+from common.commands import create_remote_admin
 from config import appconf
 from common.log import get_logger
 logger = get_logger()
 
-
+"""
 def create_remote_admin(hostname, password, username=appconf().REMOTEUSERNAME, pub_key_file=appconf().PUBKEYFILE, adminusername=appconf().USERADM):
     logger.info("create a remote admin: hostname:{0}, adminusername:{1},  pub_key_file:{2}".format(hostname, adminusername, pub_key_file))
     try:
@@ -29,6 +30,18 @@ def create_remote_admin(hostname, password, username=appconf().REMOTEUSERNAME, p
         ssh.exec_cmd("chown -R "+adminusername+"."+adminusername+" /home/"+adminusername+"/.ssh", sudo=True)
         ssh.exec_cmd("chmod 700 /home/"+adminusername+"/.ssh", sudo=True)
         ssh.exec_cmd("chmod 600 /home/"+adminusername+"/.ssh/authorized_keys", sudo=True)
+    finally:
+        ssh.close_connection()
+"""
+
+def create_remote_admin(hostname, password, username=appconf().REMOTEUSERNAME, pub_key_file=appconf().PUBKEYFILE, adminusername=appconf().USERADM):
+    logger.info("create a remote admin: hostname:{0}, adminusername:{1},  pub_key_file:{2}".format(hostname, adminusername, pub_key_file))
+    try:
+        ssh = Ssh(hostname=hostname, username=username, password=password)
+        logger.info(" Execute remote commands on: {0} with login: {1} password:{2}".format(hostname, username, password))
+        pub_key = open(pub_key_file, 'r').read()
+        pub_key= "\""+pub_key+"\""
+        ssh.exec_cmd(create_remote_admin(adminusername, username, pub_key), sudo=True)
     finally:
         ssh.close_connection()
 
