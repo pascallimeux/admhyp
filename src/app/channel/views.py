@@ -11,15 +11,15 @@ logger = get_logger()
 from app.login.views import login_required
 
 
-cluster_app = Blueprint('cluster_app',__name__)
+channel_app = Blueprint('channel_app',__name__)
 
 
-@cluster_app.route("/cluster", methods=['GET', 'POST'])
+@channel_app.route("/channel", methods=['GET', 'POST'])
 @login_required
-def cluster():
-    logger.debug("{0} invocation on /cluster resource".format(request.method))
+def channel():
+    logger.debug("{0} invocation on /channel resource".format(request.method))
     if session.get('logged_in'):
-        return render_template('cluster/cluster.html')
+        return render_template('channel/channel.html')
     else:
         logger.info("Unauthorized access from ip:{}".format(request.remote_addr))
         return render_template('401.html')

@@ -7,7 +7,8 @@ from app.database import get_session
 from app.common.services import Services
 from app.login.model import User
 from app.common.hashpwd import hash_password, check_password
-
+from common.log import get_logger
+logger = get_logger()
 class UserServices(Services):
 
     def CreateUser(self, username, password, email):
@@ -15,6 +16,7 @@ class UserServices(Services):
             raise MissingParametersException()
         user = User(email=email, username=username, password=hash_password(password))
         self.SaveRecord(user)
+        logger.debug("Save new user(\"{}\")".format(username))
         return user
 
 

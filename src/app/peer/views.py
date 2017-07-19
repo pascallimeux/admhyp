@@ -57,6 +57,7 @@ def list():
         flash('Error: {}'.format(e))
     return render_template('peer/peers.html', peers=peers)
 
+
 @peer_app.route("/peer/<hostname>")
 @login_required
 def manage(hostname):
@@ -73,39 +74,37 @@ def manage(hostname):
 def deploy(hostname):
     logger.debug("{0} /peer/{1}/deploy resource invocation".format(request.method, hostname))
     try:
-        peers = peerService.deploy(hostname)
-        logger.debug("peers:{}".format(peers))
-        for peer in peers:
-            logger.debug("peer: {}".format(peer.hostname))
+        cas = caService.get_cas()
+        peer = peerService.get_peer(hostname)
+        peer.deploy()
     except Exception as e:
         flash('Error: {}'.format(e))
-    return render_template('peer/peers.html', peers=peers)
+    return render_template('peer/peermngt.html', peer=peer, cas=cas)
+
 
 @peer_app.route("/peer/<hostname>/start")
 @login_required
 def start(hostname):
     logger.debug("{0} /peer/{1}/start resource invocation".format(request.method, hostname))
     try:
-        peers = peerService.start(hostname)
-        logger.debug("peers:{}".format(peers))
-        for peer in peers:
-            logger.debug("peer: {}".format(peer.hostname))
+        cas = caService.get_cas()
+        peer = peerService.get_peer(hostname)
+        peer.start(hostname)
     except Exception as e:
         flash('Error: {}'.format(e))
-    return render_template('peer/peers.html', peers=peers)
+    return render_template('peer/peermngt.html', peer=peer, cas=cas)
 
 @peer_app.route("/peer/<hostname>/stop")
 @login_required
 def stop(hostname):
     logger.debug("{0} /peer/{1}/stop resource invocation".format(request.method, hostname))
     try:
-        peers = peerService.stop(hostname)
-        logger.debug("peers:{}".format(peers))
-        for peer in peers:
-            logger.debug("peer: {}".format(peer.hostname))
+        cas = caService.get_cas()
+        peer = peerService.get_peer(hostname)
+        peer.stop()
     except Exception as e:
         flash('Error: {}'.format(e))
-    return render_template('peer/peers.html', peers=peers)
+    return render_template('peer/peermngt.html', peer=peer, cas=cas)
 
 @peer_app.route("/peer/<hostname>/setca", methods=['GET', 'POST'])
 @login_required
@@ -124,6 +123,7 @@ def setca (hostname):
             ca.enroll_node(nodename=nodename, password="pwd")
             tgz = ca.get_msp(nodename=nodename, hostname=hostname)
             peer.set_msp(tgz, nodename)
+            peerService.add_ca(hostname, ca.id)
             return render_template('peer/peermngt.html', form=form, peer=peer, cas=cas)
     except Exception as e:
         flash('Error: {}'.format(e))

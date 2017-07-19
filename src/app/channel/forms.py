@@ -1,5 +1,5 @@
 
 from wtforms import Form
 
-class ClusterForm(Form):
+class ChannelForm(Form):
     pass

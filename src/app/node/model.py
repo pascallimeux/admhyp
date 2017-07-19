@@ -12,6 +12,7 @@ import datetime
 from common.ssh import Ssh
 from common.log import get_logger
 import abc
+from common.commands import is_started, is_deployed, stop_process, uncompress_msp, remote_file_4_upload_msp
 
 
 logger = get_logger()
@@ -90,13 +91,47 @@ class Node(Base):
         finally:
             ssh.close_connection()
 
-    @abc.abstractmethod
+
+    def set_msp(self, tgz, nodename):
+        logger.debug("set_msp on {0}({1})".format(self.get_type(), self.id))
+        self.upload_file(tgz, remote_file_4_upload_msp())
+        self.exec_command(uncompress_msp())
+
     def is_deployed(self):
+        logger.debug ("Check if the {0}({1}) is deployed".format(self.get_type(), self.hostname))
+        out, err = self.exec_command(is_deployed(self.get_type()))
+        if "True" in out:
+            return True
         return False
 
-    @abc.abstractmethod
     def is_started(self):
+        logger.debug ("Check if the {0}({1}) is started".format(self.get_process_name(), self.hostname))
+        out, err = self.exec_command(is_started(self.get_process_name()))
+        if "True" in out:
+            return True
         return False
+
+    def check_deployed(self):
+        if not self.is_deployed():
+            raise Exception("{} not deployed!".format(self.get_type()))
+
+    def check_started(self):
+        self.check_deployed()
+        if not self.is_started():
+            raise Exception("{} not started!".format(self.get_type()))
+
+    def stop(self):
+        logger.debug("Stop a {0}({1})".format(self.get_type(), self.hostname))
+        self.check_started()
+        self.exec_command(stop_process(self.get_process_name()))
+
+    @abc.abstractmethod
+    def get_type(self):
+        return
+
+    @abc.abstractmethod
+    def get_process_name(self):
+        return
 
     @abc.abstractmethod
     def deploy(self):
@@ -106,10 +141,3 @@ class Node(Base):
     def start(self):
         return
 
-    @abc.abstractmethod
-    def stop(self):
-        return
-
-    @abc.abstractmethod
-    def get_type(self):
-        return

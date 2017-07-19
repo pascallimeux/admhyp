@@ -10,20 +10,20 @@ from app.database import get_session
 from common.log import get_logger
 logger = get_logger()
 from app.common.constants import NodeType
-from core.remotecommands import create_remote_admin, check_ssh_admin_connection
+from core.remotecommands import create_remote_connection, check_ssh_admin_connection
 
 class OrdererServices(Services):
 
-    def create_orderer(self, hostname, ca, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
+    def create_orderer(self, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
         try:
-            create_remote_admin(hostname=hostname, password=remotepassword, username=remotelogin, pub_key_file=pub_key_file, adminusername=remoteadmlogin)
+            create_remote_connection(hostname=hostname, password=remotepassword, username=remotelogin, pub_key_file=pub_key_file, adminusername=remoteadmlogin)
             if not check_ssh_admin_connection(hostname=hostname, remoteadminlogin=remoteadmlogin, key_file=key_file):
                 raise Exception()
         except Exception as e:
             logger.error(e)
             raise Exception("Create remote admin failled!")
         try:
-            orderer = Orderer(hostname=hostname, ca=ca, type=NodeType.ORDERER, login=remoteadmlogin, key_file=key_file )
+            orderer = Orderer(hostname=hostname, type=NodeType.ORDERER, login=remoteadmlogin, key_file=key_file )
             self.SaveRecord(orderer)
         except Exception as e:
             get_session().rollback()
@@ -49,11 +49,13 @@ class OrdererServices(Services):
         return Orderer.query.filter(Orderer.type == NodeType.ORDERER)
 
 
-    def stop(self, hostname):
-        pass
-
-    def start(self, hostname):
-        pass
-
-    def deploy(self, hostname):
-        pass
+    def add_ca(self, hostname, ca_id):
+        try:
+            orderer = self.get_orderer(hostname)
+            orderer.ca = ca_id
+            self.SaveRecord(orderer)
+        except Exception as e:
+            get_session().rollback()
+            logger.error("{0}".format(e))
+            raise Exception("Data not update, database error!")
+        return orderer

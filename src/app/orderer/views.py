@@ -6,7 +6,8 @@ Created on 6 july 2017
 
 from flask import flash, render_template, request
 from flask import Blueprint
-from app.orderer.forms import OrdererForm
+from app.orderer.forms import OrdererForm, MspForm
+from app.ca.services import CaServices
 from app.orderer.services import OrdererServices
 from common.log import get_logger
 logger = get_logger()
@@ -16,6 +17,7 @@ from app.login.views import login_required
 orderer_app = Blueprint('orderer_app',__name__)
 
 ordererService = OrdererServices()
+caService = CaServices()
 
 @orderer_app.route("/orderer", methods=['GET', 'POST'])
 @login_required
@@ -50,51 +52,76 @@ def list():
         flash('Error: {}'.format(e))
     return render_template('orderer/orderers.html', orderers=orderers)
 
+
 @orderer_app.route("/orderer/<hostname>")
 @login_required
 def manage(hostname):
     logger.debug("{0} /orderer/{1} resource invocation".format(request.method, hostname))
     try:
+        cas = caService.get_cas()
         orderer = ordererService.get_orderer(hostname)
     except Exception as e:
         flash('Error: {}'.format(e))
-    return render_template('orderer/orderermngt.html', orderer=orderer)
+    return render_template('orderer/orderermngt.html', orderer=orderer, cas=cas)
 
 @orderer_app.route("/orderer/<hostname>/deploy")
 @login_required
 def deploy(hostname):
     logger.debug("{0} /orderer/{1}/deploy resource invocation".format(request.method, hostname))
     try:
-        orderers = ordererService.deploy(hostname)
-        logger.debug("orderers:{}".format(orderers))
-        for orderer in orderers:
-            logger.debug("orderer: {}".format(orderer.hostname))
+        cas = caService.get_cas()
+        orderer = ordererService.get_orderer(hostname)
+        orderer.deploy()
     except Exception as e:
         flash('Error: {}'.format(e))
-    return render_template('orderer/orderers.html', orderersorderers)
+    return render_template('orderer/orderermngt.html', orderer=orderer, cas=cas)
+
 
 @orderer_app.route("/orderer/<hostname>/start")
 @login_required
 def start(hostname):
     logger.debug("{0} /orderer/{1}/start resource invocation".format(request.method, hostname))
     try:
-        orderers = ordererService.start(hostname)
-        logger.debug("orderers:{}".format(orderers))
-        for orderer in orderers:
-            logger.debug("ordererr: {}".format(orderer.hostname))
+        cas = caService.get_cas()
+        orderer = ordererService.get_orderer(hostname)
+        orderer.start()
     except Exception as e:
         flash('Error: {}'.format(e))
-    return render_template('orderer/orderers.html', orderers=orderers)
+    return render_template('orderer/orderermngt.html', orderer=orderer, cas=cas)
+
 
 @orderer_app.route("/orderer/<hostname>/stop")
 @login_required
 def stop(hostname):
     logger.debug("{0} /orderer/{1}/stop resource invocation".format(request.method, hostname))
     try:
-        orderers = ordererService.stop(hostname)
-        logger.debug("orderers:{}".format(orderers))
-        for orderer in orderers:
-            logger.debug("orderer: {}".format(orderer.hostname))
+        cas = caService.get_cas()
+        orderer = ordererService.get_orderer(hostname)
+        orderer.stop()
     except Exception as e:
         flash('Error: {}'.format(e))
-    return render_template('orderer/orderers.html', orderers=orderers)
+    return render_template('orderer/orderermngt.html', orderer=orderer, cas=cas)
+
+
+@orderer_app.route("/orderer/<hostname>/setca", methods=['GET', 'POST'])
+@login_required
+def setca (hostname):
+    logger.debug("{0} /orderer/{1}/setca resource invocation".format(request.method, hostname))
+    form = MspForm(request.form)
+    logger.error(form.errors)
+    try:
+        cas = caService.get_cas()
+        orderer = ordererService.get_orderer(hostname)
+        if request.method == 'POST':
+            ca_hostname = request.form['ca_hostname']
+            ca = caService.get_ca(ca_hostname)
+            nodename="orderer_" + hostname
+            ca.register_node(nodename=nodename, password="pwd")
+            ca.enroll_node(nodename=nodename, password="pwd")
+            tgz = ca.get_msp(nodename=nodename, hostname=hostname)
+            orderer.set_msp(tgz, nodename)
+            ordererService.add_ca(hostname, ca.id)
+            return render_template('orderer/orderermngt.html', form=form, orderer=orderer, cas=cas)
+    except Exception as e:
+        flash('Error: {}'.format(e))
+    return render_template('orderer/orderermngt.html', orderer=orderer, cas=cas)

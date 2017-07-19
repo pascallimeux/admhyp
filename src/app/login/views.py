@@ -66,13 +66,13 @@ def about():
 def register():
     logger.debug("register page started")
     form = LoginForm(request.form)
-
-    print (form.errors)
     if request.method == 'POST':
-        username=request.form['name']
-        password=request.form['password']
-        email=request.form['email']
         try:
+            if not form.validate():
+                raise Exception (form.errors)
+            username=request.form['name']
+            password=request.form['password']
+            email=request.form['email']
             userServices.CreateUser(email=email,username=username, password=password)
         except Exception as e:
             flash('Error: {}'.format(e))
@@ -81,6 +81,5 @@ def register():
             flash('Thanks for registration ' + username)
         else:
             flash('Error: All the form fields are required. ')
-
     return render_template('login/register.html', form=form)
 

@@ -14,3 +14,7 @@ class Enum(set):
 NodeType = Enum(['PEER', 'CA', 'ORDERER'])
 
 NodeStatus = Enum(['CREATED', 'NOTCONNECT', 'CONNECTED', 'UNDEPLOYED', 'DEPLOYED', 'STARTED', 'STOPPED'])
+
+PEERPROCESSNAME="peer"
+CASERVERPROCESSNAME="fabric-ca-server"
+ORDERERPROCESSNAME="orderer"

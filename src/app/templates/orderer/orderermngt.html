@@ -10,4 +10,20 @@
         <div align="right"><input type="back" class="btn btn-primary"  value="Back" onclick="window.location='{{ url_for('orderer_app.list') }}';" /></div>
     {% endif %}
 </div>
+<div class="container">
+    {% if orderer %}
+        <h2>select certificat authority server</h2>
+        <form  action="{{ url_for('orderer_app.setca', hostname=orderer.hostname) }}" method="post" role="form">
+            <div class="form-group">
+                <select name="ca_hostname" width="300px">
+                    {% for ca in cas %}
+                        <option value="{{ ca.hostname }}" SELECTED>{{ ca.hostname }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success" value="Select">Generate MSP</button>
+        </form>
+    {% endif %}
+</div>
 {% endblock %}
+

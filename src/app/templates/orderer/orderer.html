@@ -12,13 +12,6 @@
             <label for="hostname">Remote server hostname:</label>
             <input type="text" class="form-control" id="Hostname" name="hostname">
             <br>
-            <label for="ca">Certificate authority:</label>
-            <select name="ca" width="300px">
-                {% for ca in cas %}
-                    <option value="{{ ca.hostname }}" SELECTED>{{ ca.hostname }}</option>
-                {% endfor %}
-            </select>
-            <br>
             <label for="keyfile">Local key file:</label>
             <input type="text" class="form-control" id="keyfile" name="keyfile" value="{{ config.KEYFILE }}" >
             <br>

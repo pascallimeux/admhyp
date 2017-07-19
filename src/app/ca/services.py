@@ -9,13 +9,13 @@ from app.database import get_session
 from common.log import get_logger
 logger = get_logger()
 from app.common.constants import NodeType
-from core.remotecommands import create_remote_admin, check_ssh_admin_connection
+from core.remotecommands import create_remote_connection, check_ssh_admin_connection
 
 class CaServices(Services):
 
     def create_ca(self, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
         try:
-            create_remote_admin(hostname=hostname, password=remotepassword, username=remotelogin,
+            create_remote_connection(hostname=hostname, password=remotepassword, username=remotelogin,
                                 pub_key_file=pub_key_file, adminusername=remoteadmlogin)
             if not check_ssh_admin_connection(hostname=hostname, remoteadminlogin=remoteadmlogin, key_file=key_file):
                 raise Exception()

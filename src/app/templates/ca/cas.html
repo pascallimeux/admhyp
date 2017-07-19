@@ -2,13 +2,26 @@
 {% block title %}CAs page{% endblock %}
 {% block content %}
 <div class="container">
-    <h2>cas</h2>
+    <h2>certificate authorities</h2>
     <div align="right"><a href="{{ url_for('ca_app.create') }}">add a ca</a></div>
-    hostname  status
-    {% if cas %}
-        {% for ca in cas %}
-            <li><a href = "{{ url_for('ca_app.manage', hostname=ca.hostname) }}">{{ ca.hostname }}</a>{{ ca.get_status() }}</li>
-        {% endfor %}
-    {% endif %}
+    <TABLE BORDER="5"    WIDTH="50%"   CELLPADDING="4" CELLSPACING="3">
+       <TR>
+          <TH COLSPAN="2"><BR><H3>Certificates authorities</H3>
+          </TH>
+       </TR>
+       <TR>
+          <TH>Hostname</TH>
+          <TH>Status  </TH>
+       </TR>
+       {% if cas %}
+           {% for ca in cas %}
+              <TR ALIGN="CENTER">
+                 <TD><a href = "{{ url_for('ca_app.manage', hostname=ca.hostname) }}">{{ ca.hostname }}</a></TD><TD>{{ ca.get_status() }}</TD>
+              </TR>
+           {% endfor %}
+       {% endif %}
+    </TABLE>
 </div>
 {% endblock %}
+
+
