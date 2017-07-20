@@ -18,7 +18,7 @@ logger = get_logger()
 
 class Ca(Node):
     __tablename__ = 'ca'
-    id = Column(String, ForeignKey('node.hostname'), primary_key=True)
+    id = Column(String, ForeignKey('node.name'), primary_key=True)
     __mapper_args__ = {
         'polymorphic_identity':NodeType.CA,
     }
@@ -82,8 +82,8 @@ class Ca(Node):
         self.exec_command(enroll_node(nodename, password), checkerr=False)
         logger.debug("{} is now enroll".format(nodename))
 
-    def get_msp(self, nodename, hostname):
-        logger.debug("copy_msp on:{}".format(hostname))
+    def get_msp(self, nodename, name):
+        logger.debug("copy_msp on:{}".format(name))
         self.check_started()
         tgz = "/tmp/{0}.tgz".format(nodename)
         self.exec_command(compress_msp(nodename))

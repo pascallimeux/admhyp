@@ -14,7 +14,7 @@ from core.remotecommands import create_remote_connection, check_ssh_admin_connec
 
 class OrdererServices(Services):
 
-    def create_orderer(self, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
+    def create_orderer(self, name, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
         try:
             create_remote_connection(hostname=hostname, password=remotepassword, username=remotelogin, pub_key_file=pub_key_file, adminusername=remoteadmlogin)
             if not check_ssh_admin_connection(hostname=hostname, remoteadminlogin=remoteadmlogin, key_file=key_file):
@@ -23,7 +23,7 @@ class OrdererServices(Services):
             logger.error(e)
             raise Exception("Create remote admin failled!")
         try:
-            orderer = Orderer(hostname=hostname, type=NodeType.ORDERER, login=remoteadmlogin, key_file=key_file )
+            orderer = Orderer(name=name, hostname=hostname, type=NodeType.ORDERER, login=remoteadmlogin, key_file=key_file )
             self.SaveRecord(orderer)
         except Exception as e:
             get_session().rollback()
@@ -32,26 +32,25 @@ class OrdererServices(Services):
 
         return orderer
 
-    def remove_orderer(self, hostname):
-        objs = self.get_session().query(Orderer).filter(Orderer.hostname==hostname).filter(Orderer.type == NodeType.ORDERER)
+    def remove_orderer(self, name):
+        objs = self.get_session().query(Orderer).filter(Orderer.name==name)
         ret = objs.delete()
         get_session().commit()
         return ret
 
-    def get_orderer(self, hostname):
-        orderer = Orderer.query.filter(Orderer.hostname == hostname).filter(Orderer.type == NodeType.ORDERER).first()
+    def get_orderer(self, name):
+        orderer = Orderer.query.filter(Orderer.name == name).first()
         if orderer == None:
             raise ObjectNotFoundException()
-        logger.debug(orderer)
         return orderer
 
     def get_orderers(self):
-        return Orderer.query.filter(Orderer.type == NodeType.ORDERER)
+        return Orderer.query.all()
 
 
-    def add_ca(self, hostname, ca_id):
+    def add_ca(self, name, ca_id):
         try:
-            orderer = self.get_orderer(hostname)
+            orderer = self.get_orderer(name)
             orderer.ca = ca_id
             self.SaveRecord(orderer)
         except Exception as e:

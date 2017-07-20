@@ -11,12 +11,11 @@ from common.log import get_logger
 logger = get_logger()
 from app.common.constants import NodeType
 from core.remotecommands import create_remote_connection, check_ssh_admin_connection
-from app.ca.services import CaServices
 
 
 class PeerServices(Services):
 
-    def create_peer(self, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
+    def create_peer(self, name, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
         try:
             create_remote_connection(hostname=hostname, password=remotepassword, username=remotelogin, pub_key_file=pub_key_file, adminusername=remoteadmlogin)
             if not check_ssh_admin_connection(hostname=hostname, remoteadminlogin=remoteadmlogin, key_file=key_file):
@@ -25,34 +24,32 @@ class PeerServices(Services):
             logger.error(e)
             raise Exception("Create remote admin failled!")
         try:
-            peer = Peer(hostname=hostname, type=NodeType.PEER, login=remoteadmlogin, key_file=key_file )
+            peer = Peer(name=name, hostname=hostname, type=NodeType.PEER, login=remoteadmlogin, key_file=key_file )
             self.SaveRecord(peer)
         except Exception as e:
             get_session().rollback()
             logger.error("{0}".format(e))
             raise Exception ("Data not created, database error!")
-
         return peer
 
-    def remove_peer(self, hostname):
-        objs = self.get_session().query(Peer).filter(Peer.hostname==hostname).filter(Peer.type == NodeType.PEER)
+    def remove_peer(self, name):
+        objs = self.get_session().query(Peer).filter(Peer.name==name)
         ret = objs.delete()
         get_session().commit()
         return ret
 
-    def get_peer(self, hostname):
-        peer = Peer.query.filter(Peer.hostname == hostname).filter(Peer.type == NodeType.PEER).first()
+    def get_peer(self, name):
+        peer = Peer.query.filter(Peer.name == name).first()
         if peer == None:
             raise ObjectNotFoundException()
-        logger.debug(peer)
         return peer
 
     def get_peers(self):
-        return Peer.query.filter(Peer.type == NodeType.PEER)
+        return Peer.query.all()
 
-    def add_ca(self, hostname, ca_id):
+    def add_ca(self, name, ca_id):
         try:
-            peer = self.get_peer(hostname)
+            peer = self.get_peer(name)
             peer.ca = ca_id
             self.SaveRecord(peer)
         except Exception as e:

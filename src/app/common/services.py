@@ -17,7 +17,9 @@ class Services():
             get_session().commit()
         except Exception as e:
             get_session().rollback()
+            logger.error("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
             logger.error("{0}".format(e))
+            logger.error("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
             raise e
 
     def CreateDB(self):

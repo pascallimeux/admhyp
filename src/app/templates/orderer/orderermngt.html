@@ -3,21 +3,21 @@
 {% block content %}
 <div class="container">
     {% if orderer %}
-        <h2>orderer hostname: {{ orderer.hostname }}  {{ orderer.get_status() }}</h2>
-        <div><input type="back" class="btn btn-primary"  value="Deploy" onclick="window.location='{{ url_for('orderer_app.deploy', hostname=orderer.hostname) }}';" /></div><br>
-        <div><input type="back" class="btn btn-primary"  value="Start" onclick="window.location='{{ url_for('orderer_app.start', hostname=orderer.hostname) }}';" /></div><br>
-        <div><input type="back" class="btn btn-primary"  value="Stop" onclick="window.location='{{ url_for('orderer_app.stop', hostname=orderer.hostname) }}';" /></div><br>
+        <h2>orderer name: {{ orderer.name }}  {{ orderer.get_status() }}</h2>
+        <div><input type="back" class="btn btn-primary"  value="Deploy" onclick="window.location='{{ url_for('orderer_app.deploy', name=orderer.name) }}';" /></div><br>
+        <div><input type="back" class="btn btn-primary"  value="Start" onclick="window.location='{{ url_for('orderer_app.start', name=orderer.name) }}';" /></div><br>
+        <div><input type="back" class="btn btn-primary"  value="Stop" onclick="window.location='{{ url_for('orderer_app.stop', name=orderer.name) }}';" /></div><br>
         <div align="right"><input type="back" class="btn btn-primary"  value="Back" onclick="window.location='{{ url_for('orderer_app.list') }}';" /></div>
     {% endif %}
 </div>
 <div class="container">
     {% if orderer %}
         <h2>select certificat authority server</h2>
-        <form  action="{{ url_for('orderer_app.setca', hostname=orderer.hostname) }}" method="post" role="form">
+        <form  action="{{ url_for('orderer_app.setca', name=orderer.name) }}" method="post" role="form">
             <div class="form-group">
-                <select name="ca_hostname" width="300px">
+                <select name="ca_name" width="300px">
                     {% for ca in cas %}
-                        <option value="{{ ca.hostname }}" SELECTED>{{ ca.hostname }}</option>
+                        <option value="{{ ca.name }}" SELECTED>{{ ca.name }}</option>
                     {% endfor %}
                 </select>
             </div>

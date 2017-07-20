@@ -3,10 +3,10 @@
 {% block content %}
 <div class="container">
     {% if ca %}
-        <h2>ca hostname: {{ ca.hostname }}  {{ ca.get_status() }}</h2>
-        <div><input type="back" class="btn btn-primary"  value="Deploy" onclick="window.location='{{ url_for('ca_app.deploy', hostname=ca.hostname) }}';" /></div><br>
-        <div><input type="back" class="btn btn-primary"  value="Start" onclick="window.location='{{ url_for('ca_app.start', hostname=ca.hostname) }}';" /></div><br>
-        <div><input type="back" class="btn btn-primary"  value="Stop" onclick="window.location='{{ url_for('ca_app.stop', hostname=ca.hostname) }}';" /></div><br>
+        <h2>ca name: {{ ca.name }}  {{ ca.get_status() }}</h2>
+        <div><input type="back" class="btn btn-primary"  value="Deploy" onclick="window.location='{{ url_for('ca_app.deploy', name=ca.name) }}';" /></div><br>
+        <div><input type="back" class="btn btn-primary"  value="Start" onclick="window.location='{{ url_for('ca_app.start', name=ca.name) }}';" /></div><br>
+        <div><input type="back" class="btn btn-primary"  value="Stop" onclick="window.location='{{ url_for('ca_app.stop', name=ca.name) }}';" /></div><br>
         <div align="right"><input type="back" class="btn btn-primary"  value="Back" onclick="window.location='{{ url_for('ca_app.list') }}';" /></div>
     {% endif %}
 </div>
@@ -14,7 +14,7 @@
 <div class="container">
     {% if ca %}
         <h2>Create hyperledger administrator</h2>
-        <form  action="{{ url_for('ca_app.create_admin', hostname=ca.hostname) }}" method="post" role="form">
+        <form  action="{{ url_for('ca_app.create_admin', name=ca.name) }}" method="post" role="form">
 
             <div class="form-group">
                 <label for="username">Username:</label>
@@ -31,7 +31,7 @@
 <div class="container">
     {% if ca %}
         <h2>register a user</h2>
-        <form  action="{{ url_for('ca_app.register', hostname=ca.hostname) }}" method="post" role="form">
+        <form  action="{{ url_for('ca_app.register', name=ca.name) }}" method="post" role="form">
 
             <div class="form-group">
                 <label for="username">Username:</label>
@@ -47,7 +47,7 @@
 <div class="container">
     {% if ca %}
         <h2>enroll a user</h2>
-        <form  action="{{ url_for('ca_app.enroll', hostname=ca.hostname) }}" method="post" role="form">
+        <form  action="{{ url_for('ca_app.enroll', name=ca.name) }}" method="post" role="form">
 
             <div class="form-group">
                 <label for="username">Username:</label>

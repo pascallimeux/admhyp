@@ -75,6 +75,7 @@ def register():
             email=request.form['email']
             userServices.CreateUser(email=email,username=username, password=password)
         except Exception as e:
+            logger.error(e)
             flash('Error: {}'.format(e))
 
         if form.validate():

@@ -20,8 +20,9 @@ logger = get_logger()
 
 class Node(Base):
     __tablename__ = 'node'
-    hostname = Column(String, primary_key=True)
-    type  = Column(String, primary_key=True)
+    name  = Column(String, primary_key=True)
+    type  = Column(String)
+    hostname = Column(String)
     login = Column(String)
     key_file = Column(String)
     is_deployed = Column(Boolean, default=False)

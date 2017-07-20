@@ -13,7 +13,7 @@ from core.remotecommands import create_remote_connection, check_ssh_admin_connec
 
 class CaServices(Services):
 
-    def create_ca(self, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
+    def create_ca(self, name, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
         try:
             create_remote_connection(hostname=hostname, password=remotepassword, username=remotelogin,
                                 pub_key_file=pub_key_file, adminusername=remoteadmlogin)
@@ -23,7 +23,7 @@ class CaServices(Services):
             logger.error(e)
             raise Exception("Create remote admin failled!")
         try:
-            ca = Ca(hostname=hostname, type=NodeType.CA, login=remoteadmlogin, key_file=key_file)
+            ca = Ca(name=name, hostname=hostname, type=NodeType.CA, login=remoteadmlogin, key_file=key_file)
             self.SaveRecord(ca)
         except Exception as e:
             get_session().rollback()
@@ -31,19 +31,18 @@ class CaServices(Services):
             raise Exception("Data not record, database error!")
         return ca
 
-    def remove_ca(self, hostname):
-        objs = self.get_session().query(Ca).filter(Ca.hostname == hostname).filter( Ca.type == NodeType.CA)
+    def remove_ca(self, name):
+        objs = self.get_session().query(Ca).filter(Ca.name == name)
         ret = objs.delete()
         get_session().commit()
         return ret
 
-    def get_ca(self, hostname):
-        ca = Ca.query.filter(Ca.hostname == hostname).filter( Ca.type == NodeType.CA).first()
+    def get_ca(self, name):
+        ca = Ca.query.filter(Ca.name == name).first()
         if ca == None:
             raise ObjectNotFoundException()
-        logger.debug(ca)
         return ca
 
     def get_cas(self):
-        return Ca.query.filter(Ca.type == NodeType.CA)
+        return Ca.query.all()
 

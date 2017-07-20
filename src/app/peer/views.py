@@ -31,6 +31,7 @@ def create():
         flash('Error: {}'.format(e))
 
     if request.method == 'POST':
+        name=request.form['name']
         hostname=request.form['hostname']
         key_file=request.form['keyfile']
         pub_key_file=request.form['pubkeyfile']
@@ -41,7 +42,7 @@ def create():
             logger.debug("hostname:{0} key_file:{1} pubkeyfile:{2} radmlogin:{3} rlogin:{4} rpassword:{5}".format(hostname, key_file, pub_key_file, remoteadmlogin, remotelogin, remotepassword))
             if not form.validate():
                 flash('Error:{}'.format(form.errors))
-            peerService.create_peer(hostname=hostname, remoteadmlogin=remoteadmlogin,  remotepassword=remotepassword, remotelogin=remotelogin, pub_key_file=pub_key_file, key_file=key_file)
+            peerService.create_peer(name=name, hostname=hostname, remoteadmlogin=remoteadmlogin,  remotepassword=remotepassword, remotelogin=remotelogin, pub_key_file=pub_key_file, key_file=key_file)
             flash("new peer created: (hostname={0})".format(hostname))
         except Exception as e:
             flash('Error: {}'.format(e))
@@ -58,72 +59,72 @@ def list():
     return render_template('peer/peers.html', peers=peers)
 
 
-@peer_app.route("/peer/<hostname>")
+@peer_app.route("/peer/<name>")
 @login_required
-def manage(hostname):
-    logger.debug("{0} /peer/{1} resource invocation".format(request.method, hostname))
+def manage(name):
+    logger.debug("{0} /peer/{1} resource invocation".format(request.method, name))
     try:
         cas = caService.get_cas()
-        peer = peerService.get_peer(hostname)
+        peer = peerService.get_peer(name)
     except Exception as e:
         flash('Error: {}'.format(e))
     return render_template('peer/peermngt.html', peer=peer, cas=cas)
 
-@peer_app.route("/peer/<hostname>/deploy")
+@peer_app.route("/peer/<name>/deploy")
 @login_required
-def deploy(hostname):
-    logger.debug("{0} /peer/{1}/deploy resource invocation".format(request.method, hostname))
+def deploy(name):
+    logger.debug("{0} /peer/{1}/deploy resource invocation".format(request.method, name))
     try:
         cas = caService.get_cas()
-        peer = peerService.get_peer(hostname)
+        peer = peerService.get_peer(name)
         peer.deploy()
     except Exception as e:
         flash('Error: {}'.format(e))
     return render_template('peer/peermngt.html', peer=peer, cas=cas)
 
 
-@peer_app.route("/peer/<hostname>/start")
+@peer_app.route("/peer/<name>/start")
 @login_required
-def start(hostname):
-    logger.debug("{0} /peer/{1}/start resource invocation".format(request.method, hostname))
+def start(name):
+    logger.debug("{0} /peer/{1}/start resource invocation".format(request.method, name))
     try:
         cas = caService.get_cas()
-        peer = peerService.get_peer(hostname)
-        peer.start(hostname)
+        peer = peerService.get_peer(name)
+        peer.start(name)
     except Exception as e:
         flash('Error: {}'.format(e))
     return render_template('peer/peermngt.html', peer=peer, cas=cas)
 
-@peer_app.route("/peer/<hostname>/stop")
+@peer_app.route("/peer/<name>/stop")
 @login_required
-def stop(hostname):
-    logger.debug("{0} /peer/{1}/stop resource invocation".format(request.method, hostname))
+def stop(name):
+    logger.debug("{0} /peer/{1}/stop resource invocation".format(request.method, name))
     try:
         cas = caService.get_cas()
-        peer = peerService.get_peer(hostname)
+        peer = peerService.get_peer(name)
         peer.stop()
     except Exception as e:
         flash('Error: {}'.format(e))
     return render_template('peer/peermngt.html', peer=peer, cas=cas)
 
-@peer_app.route("/peer/<hostname>/setca", methods=['GET', 'POST'])
+@peer_app.route("/peer/<name>/setca", methods=['GET', 'POST'])
 @login_required
-def setca (hostname):
-    logger.debug("{0} /peer/{1}/setca resource invocation".format(request.method, hostname))
+def setca (name):
+    logger.debug("{0} /peer/{1}/setca resource invocation".format(request.method, name))
     form = MspForm(request.form)
     logger.error(form.errors)
     try:
         cas = caService.get_cas()
-        peer = peerService.get_peer(hostname)
+        peer = peerService.get_peer(name)
         if request.method == 'POST':
             ca_hostname = request.form['ca_hostname']
             ca = caService.get_ca(ca_hostname)
-            nodename="peer_" + hostname
+            nodename="peer_" + name
             ca.register_node(nodename=nodename, password="pwd")
             ca.enroll_node(nodename=nodename, password="pwd")
-            tgz = ca.get_msp(nodename=nodename, hostname=hostname)
+            tgz = ca.get_msp(nodename=nodename, name=name)
             peer.set_msp(tgz, nodename)
-            peerService.add_ca(hostname, ca.id)
+            peerService.add_ca(name, ca.id)
             return render_template('peer/peermngt.html', form=form, peer=peer, cas=cas)
     except Exception as e:
         flash('Error: {}'.format(e))

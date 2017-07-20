@@ -14,7 +14,7 @@ logger = get_logger()
 
 class Peer(Node):
     __tablename__ = 'peer'
-    id = Column(String, ForeignKey('node.hostname'), primary_key=True)
+    id = Column(String, ForeignKey('node.name'), primary_key=True)
     __mapper_args__ = {
         'polymorphic_identity':NodeType.PEER,
     }

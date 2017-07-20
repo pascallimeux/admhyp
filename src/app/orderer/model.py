@@ -11,14 +11,14 @@ from common.log import get_logger
 logger = get_logger()
 from common.log import get_logger
 from core.localcommands import exec_local_cmd
-from common.commands import uncompress_msp, build_folders, write_deployed, uncompress_files, start_orderer, compress_locales_files_4_orderer
+from common.commands import build_folders, write_deployed, uncompress_files, start_orderer, compress_locales_files_4_orderer
 logger = get_logger()
 
 
 
 class Orderer(Node):
     __tablename__ = 'orderer'
-    id = Column(String, ForeignKey('node.hostname'), primary_key=True)
+    id = Column(String, ForeignKey('node.name'), primary_key=True)
     __mapper_args__ = {
         'polymorphic_identity':NodeType.ORDERER,
     }

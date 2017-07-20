@@ -6,10 +6,11 @@
     <div align="right"><a href="{{ url_for('orderer_app.create') }}">add a orderer</a></div>
     <TABLE BORDER="5"    WIDTH="50%"   CELLPADDING="4" CELLSPACING="3">
        <TR>
-          <TH COLSPAN="3"><BR><H3>Orderers</H3>
+          <TH COLSPAN="4"><BR><H3>Orderers</H3>
           </TH>
        </TR>
        <TR>
+          <TH>Name</TH>
           <TH>Hostname</TH>
           <TH>Status  </TH>
           <TH>Ca      </TH>
@@ -17,7 +18,7 @@
        {% if orderers %}
            {% for orderer in orderers %}
               <TR ALIGN="CENTER">
-                 <TD><a href = "{{ url_for('orderer_app.manage', hostname=orderer.hostname) }}">{{ orderer.hostname }}</a></TD><TD>{{ orderer.get_status() }}</TD><TD>{{ orderer.get_ca() }}</TD>
+                 <TD><a href = "{{ url_for('orderer_app.manage', name=orderer.name) }}">{{ orderer.name }}</a></TD><TD>{{ orderer.hostname }}</TD><TD>{{ orderer.get_status() }}</TD><TD>{{ orderer.get_ca() }}</TD>
               </TR>
            {% endfor %}
        {% endif %}

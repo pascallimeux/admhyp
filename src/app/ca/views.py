@@ -21,8 +21,8 @@ caService = CaServices()
 def create():
     logger.debug("{0} /ca resource invocation".format(request.method))
     form = CaForm(request.form)
-    logger.error(form.errors)
     if request.method == 'POST':
+        name=request.form['name']
         hostname=request.form['hostname']
         key_file=request.form['keyfile']
         pub_key_file=request.form['pubkeyfile']
@@ -33,8 +33,8 @@ def create():
             logger.debug("hostname:{0} key_file:{1} pubkeyfile:{2} radmlogin:{3} rlogin:{4} rpassword:{5}".format(hostname, key_file, pub_key_file, remoteadmlogin, remotelogin, remotepassword))
             if not form.validate():
                 flash('Error:{}'.format(form.errors))
-            caService.create_ca(hostname=hostname, remoteadmlogin=remoteadmlogin,  remotepassword=remotepassword, remotelogin=remotelogin, pub_key_file=pub_key_file, key_file=key_file)
-            flash("new ca created: (hostname={0})".format(hostname))
+            caService.create_ca(name=name, hostname=hostname, remoteadmlogin=remoteadmlogin,  remotepassword=remotepassword, remotelogin=remotelogin, pub_key_file=pub_key_file, key_file=key_file)
+            flash("new ca created: (name={0})".format(name))
         except Exception as e:
             flash('Error: {}'.format(e))
     return render_template('ca/ca.html', form=form)
@@ -49,59 +49,57 @@ def list():
         flash('Error: {}'.format(e))
     return render_template('ca/cas.html', cas=cas)
 
-@ca_app.route("/ca/<hostname>", methods=['GET', 'POST'])
+@ca_app.route("/ca/<name>", methods=['GET', 'POST'])
 @login_required
-def manage(hostname):
-    logger.debug("{0} /ca/{1} resource invocation".format(request.method, hostname))
-    form = RegisterForm(request.form)
-    logger.error(form.errors)
+def manage(name):
+    logger.debug("{0} /ca/{1} resource invocation".format(request.method, name))
     try:
-        ca = caService.get_ca(hostname)
+        ca = caService.get_ca(name)
     except Exception as e:
         flash('Error: {}'.format(e))
     return render_template('ca/camngt.html', ca=ca)
 
-@ca_app.route("/ca/<hostname>/deploy")
+@ca_app.route("/ca/<name>/deploy")
 @login_required
-def deploy(hostname):
-    logger.debug("{0} /ca/{1}/deploy resource invocation".format(request.method, hostname))
+def deploy(name):
+    logger.debug("{0} /ca/{1}/deploy resource invocation".format(request.method, name))
     try:
-        ca = caService.get_ca(hostname)
+        ca = caService.get_ca(name)
         ca.deploy()
     except Exception as e:
         flash('Error: {}'.format(e))
     return render_template('ca/camngt.html', ca=ca)
 
-@ca_app.route("/ca/<hostname>/start")
+@ca_app.route("/ca/<name>/start")
 @login_required
-def start(hostname):
-    logger.debug("{0} /ca/{1}/start resource invocation".format(request.method, hostname))
+def start(name):
+    logger.debug("{0} /ca/{1}/start resource invocation".format(request.method, name))
     try:
-        ca = caService.get_ca(hostname)
+        ca = caService.get_ca(name)
         ca.start()
     except Exception as e:
         flash('Error: {}'.format(e))
     return render_template('ca/camngt.html', ca=ca)
 
-@ca_app.route("/ca/<hostname>/stop")
+@ca_app.route("/ca/<name>/stop")
 @login_required
-def stop(hostname):
-    logger.debug("{0} /ca/{1}/stop resource invocation".format(request.method, hostname))
+def stop(name):
+    logger.debug("{0} /ca/{1}/stop resource invocation".format(request.method, name))
     try:
-        ca = caService.get_ca(hostname)
+        ca = caService.get_ca(name)
         ca.stop()
     except Exception as e:
         flash('Error: {}'.format(e))
     return render_template('ca/camngt.html', ca=ca)
 
-@ca_app.route("/ca/<hostname>/register", methods=['GET', 'POST'])
+@ca_app.route("/ca/<name>/register", methods=['GET', 'POST'])
 @login_required
-def register(hostname):
-    logger.debug("{0} /ca/{1}/register resource invocation".format(request.method, hostname))
+def register(name):
+    logger.debug("{0} /ca/{1}/register resource invocation".format(request.method, name))
     form = RegisterForm(request.form)
     logger.error(form.errors)
     try:
-        ca = caService.get_ca(hostname)
+        ca = caService.get_ca(name)
         if request.method == 'POST':
             username = request.form['username']
             password = request.form['password']
@@ -114,14 +112,14 @@ def register(hostname):
         flash('Error: {}'.format(e))
     return render_template('ca/camngt.html', ca=ca)
 
-@ca_app.route("/ca/<hostname>/createadmin", methods=['GET', 'POST'])
+@ca_app.route("/ca/<name>/createadmin", methods=['GET', 'POST'])
 @login_required
-def create_admin(hostname):
-    logger.debug("{0} /ca/{1}/createadmin resource invocation".format(request.method, hostname))
+def create_admin(name):
+    logger.debug("{0} /ca/{1}/createadmin resource invocation".format(request.method, name))
     form = RegisterForm(request.form)
     logger.error(form.errors)
     try:
-        ca = caService.get_ca(hostname)
+        ca = caService.get_ca(name)
         if request.method == 'POST':
             username = request.form['username']
             password = request.form['password']
@@ -134,14 +132,14 @@ def create_admin(hostname):
         flash('Error: {}'.format(e))
     return render_template('ca/camngt.html', ca=ca)
 
-@ca_app.route("/ca/<hostname>/enroll", methods=['GET', 'POST'])
+@ca_app.route("/ca/<name>/enroll", methods=['GET', 'POST'])
 @login_required
-def enroll(hostname):
-    logger.debug("{0} /ca/{1}/enroll resource invocation".format(request.method, hostname))
+def enroll(name):
+    logger.debug("{0} /ca/{1}/enroll resource invocation".format(request.method, name))
     form = RegisterForm(request.form)
     logger.error(form.errors)
     try:
-        ca = caService.get_ca(hostname)
+        ca = caService.get_ca(name)
         if request.method == 'POST':
             username = request.form['username']
             password = request.form['password']
