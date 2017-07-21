@@ -4,19 +4,37 @@ Created on 30 june 2017
 @author: pascal limeux
 '''
 
-from sqlalchemy import Column, String, ForeignKey, Date, Boolean
+from sqlalchemy import Column, String, Date, Boolean
 from app.database import Base
 from app.common.constants import NodeStatus
-from core.remotecommands import check_ssh_admin_connection
+from app.common.rcmds import check_ssh_admin_connection
 import datetime
-from common.ssh import Ssh
-from common.log import get_logger
+from functools import wraps
+from app.common.ssh import Ssh
+from app.common.log import get_logger
 import abc
-from common.commands import is_started, is_deployed, stop_process, uncompress_msp, remote_file_4_upload_msp
+from app.common.commands import is_started, is_deployed, stop_process, uncompress_msp, remote_file_4_upload_msp
 
 
 logger = get_logger()
 
+
+def check_deployed(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not  args[0].is_deployed():
+            raise Exception("{} not deployed!".format(args[0].get_type()))
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def check_started(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not args[0].is_started():
+            raise Exception("{} not started!".format(args[0].get_type()))
+        return f(*args, **kwargs)
+    return wrapper
 
 class Node(Base):
     __tablename__ = 'node'
@@ -59,20 +77,19 @@ class Node(Base):
             self.status =  NodeStatus.CONNECTED
 
     def exec_command(self, command, sudo=False, checkerr=True):
-        err = None
+        err = ssh = None
         try:
             ssh = Ssh(hostname=self.hostname, username=self.login, key_file=self.key_file)
             out, err = ssh.exec_cmd(command, sudo=sudo)
-        except Exception as e:
-            logger.error(e)
-            return err
         finally:
-            ssh.close_connection()
+            if ssh:
+                ssh.close_connection()
         if checkerr and err != "":
             raise Exception (err)
         return out, err
 
     def upload_file(self, localFile, remoteFile):
+        ssh = None
         try:
             ssh = Ssh(hostname=self.hostname, username=self.login, key_file=self.key_file)
             ssh.upload_file(localFile, remoteFile)
@@ -80,9 +97,11 @@ class Node(Base):
             logger.error(e)
             raise e
         finally:
-            ssh.close_connection()
+            if ssh:
+                ssh.close_connection()
 
     def download_file(self, remoteFile, localFile):
+        ssh = None
         try:
             ssh = Ssh(hostname=self.hostname, username=self.login, key_file=self.key_file)
             ssh.download_file(remoteFile, localFile)
@@ -90,8 +109,8 @@ class Node(Base):
             logger.error(e)
             raise e
         finally:
-            ssh.close_connection()
-
+            if ssh:
+                ssh.close_connection()
 
     def set_msp(self, tgz, nodename):
         logger.debug("set_msp on {0}({1})".format(self.get_type(), self.id))
@@ -112,18 +131,9 @@ class Node(Base):
             return True
         return False
 
-    def check_deployed(self):
-        if not self.is_deployed():
-            raise Exception("{} not deployed!".format(self.get_type()))
-
-    def check_started(self):
-        self.check_deployed()
-        if not self.is_started():
-            raise Exception("{} not started!".format(self.get_type()))
-
+    @check_started
     def stop(self):
         logger.debug("Stop a {0}({1})".format(self.get_type(), self.hostname))
-        self.check_started()
         self.exec_command(stop_process(self.get_process_name()))
 
     @abc.abstractmethod

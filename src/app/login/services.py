@@ -7,7 +7,7 @@ from app.database import get_session
 from app.common.services import Services
 from app.login.model import User
 from app.common.hashpwd import hash_password, check_password
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
 class UserServices(Services):
 

@@ -9,7 +9,7 @@ from flask import Blueprint
 from app.peer.forms import PeerForm, MspForm
 from app.peer.services import PeerServices
 from app.ca.services import CaServices
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
 from app.login.views import login_required
 
@@ -107,24 +107,18 @@ def stop(name):
         flash('Error: {}'.format(e))
     return render_template('peer/peermngt.html', peer=peer, cas=cas)
 
-@peer_app.route("/peer/<name>/setca", methods=['GET', 'POST'])
+@peer_app.route("/peer/<name>/ca", methods=['GET', 'POST'])
 @login_required
 def setca (name):
-    logger.debug("{0} /peer/{1}/setca resource invocation".format(request.method, name))
+    logger.debug("{0} /peer/{1}/ca resource invocation".format(request.method, name))
     form = MspForm(request.form)
-    logger.error(form.errors)
     try:
         cas = caService.get_cas()
         peer = peerService.get_peer(name)
         if request.method == 'POST':
-            ca_hostname = request.form['ca_hostname']
-            ca = caService.get_ca(ca_hostname)
-            nodename="peer_" + name
-            ca.register_node(nodename=nodename, password="pwd")
-            ca.enroll_node(nodename=nodename, password="pwd")
-            tgz = ca.get_msp(nodename=nodename, name=name)
-            peer.set_msp(tgz, nodename)
-            peerService.add_ca(name, ca.id)
+            ca_name = request.form['ca_name']
+            ca = caService.get_ca(ca_name)
+            peerService.add_ca(name, ca)
             return render_template('peer/peermngt.html', form=form, peer=peer, cas=cas)
     except Exception as e:
         flash('Error: {}'.format(e))

@@ -5,13 +5,13 @@ Created on 7 july 2017
 '''
 
 from sqlalchemy import Column, String, ForeignKey
-from app.node.model import Node
+from app.node.model import Node, check_deployed
 from app.common.constants import NodeType, ORDERERPROCESSNAME
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
-from common.log import get_logger
-from core.localcommands import exec_local_cmd
-from common.commands import build_folders, write_deployed, uncompress_files, start_orderer, compress_locales_files_4_orderer
+from app.common.log import get_logger
+from app.common.lcmds import exec_local_cmd
+from app.common.commands import build_folders, write_deployed, uncompress_files, start_orderer, compress_locales_files_4_orderer
 logger = get_logger()
 
 
@@ -37,7 +37,7 @@ class Orderer(Node):
         '''
         deploy ORDERER server
         '''
-        logger.debug ("Deploy orderer:{}".format(self.hostname))
+        logger.debug ("Deploy orderer:{}".format(self.name))
         if self.is_deployed():
             raise Exception ("ORDERER already deployed!")
         self.exec_command(build_folders(self.login), sudo=True)
@@ -46,9 +46,9 @@ class Orderer(Node):
         self.exec_command(uncompress_files())
         self.exec_command(write_deployed(self.get_type()))
 
+    @check_deployed
     def start(self):
-        logger.debug ("Start orderer:{}".format(self.hostname))
-        self.check_deployed()
+        logger.debug ("Start orderer:{}".format(self.name))
         if self.is_started():
             raise Exception ("ORDERER already started!")
         self.exec_command(start_orderer())

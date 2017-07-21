@@ -17,4 +17,4 @@ class PeerForm(Form):
 
 
 class MspForm(Form):
-    cahostname = StringField('Ca_name', validators=[validators.DataRequired()])
+    caname = StringField('Ca_name', validators=[validators.DataRequired()])

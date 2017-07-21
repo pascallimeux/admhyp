@@ -9,7 +9,7 @@ from flask import Blueprint
 from app.orderer.forms import OrdererForm, MspForm
 from app.ca.services import CaServices
 from app.orderer.services import OrdererServices
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
 from app.login.views import login_required
 
@@ -104,25 +104,18 @@ def stop(name):
     return render_template('orderer/orderermngt.html', orderer=orderer, cas=cas)
 
 
-@orderer_app.route("/orderer/<name>/setca", methods=['GET', 'POST'])
+@orderer_app.route("/orderer/<name>/ca", methods=['GET', 'POST'])
 @login_required
 def setca (name):
-    logger.debug("{0} /orderer/{1}/setca resource invocation".format(request.method, name))
+    logger.debug("{0} /orderer/{1}/ca resource invocation".format(request.method, name))
     form = MspForm(request.form)
-    logger.error(form.errors)
     try:
         cas = caService.get_cas()
         orderer = ordererService.get_orderer(name)
         if request.method == 'POST':
-            name = request.form['name']
-            ca_hostname = request.form['ca_hostname']
-            ca = caService.get_ca(ca_hostname)
-            nodename="orderer_" + name
-            ca.register_node(nodename=nodename, password="pwd")
-            ca.enroll_node(nodename=nodename, password="pwd")
-            tgz = ca.get_msp(nodename=nodename, name=name)
-            orderer.set_msp(tgz, nodename)
-            ordererService.add_ca(name, ca.id)
+            ca_name = request.form['ca_name']
+            ca = caService.get_ca(ca_name)
+            ordererService.add_ca(name, ca)
             return render_template('orderer/orderermngt.html', form=form, orderer=orderer, cas=cas)
     except Exception as e:
         flash('Error: {}'.format(e))

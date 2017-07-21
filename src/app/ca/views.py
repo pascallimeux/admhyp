@@ -7,9 +7,10 @@ Created on 6 july 2017
 
 from flask import flash, request, Blueprint, render_template
 from app.ca.forms import CaForm, RegisterForm
-from app.login.views import login_required
 from app.ca.services import CaServices
-from common.log import get_logger
+from app.common.log import get_logger
+from app.login.views import login_required
+
 logger = get_logger()
 ca_app = Blueprint('ca_app',__name__)
 

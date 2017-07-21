@@ -5,7 +5,7 @@ Created on 5 july 2017
 '''
 
 from app import app
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
 
 def user_is_logged_in():

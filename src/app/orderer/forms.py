@@ -16,4 +16,4 @@ class OrdererForm(Form):
     rpassword = StringField('Rpassword', validators=[validators.DataRequired()])
 
 class MspForm(Form):
-    cahostname = StringField('Ca_name', validators=[validators.DataRequired()])
+    caname = StringField('Ca_name', validators=[validators.DataRequired()])

@@ -6,10 +6,10 @@ Created on 30 june 2017
 from app.common.services import Services, ObjectNotFoundException
 from app.ca.model import Ca
 from app.database import get_session
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
 from app.common.constants import NodeType
-from core.remotecommands import create_remote_connection, check_ssh_admin_connection
+from app.common.rcmds import create_remote_connection, check_ssh_admin_connection
 
 class CaServices(Services):
 
@@ -17,11 +17,11 @@ class CaServices(Services):
         try:
             create_remote_connection(hostname=hostname, password=remotepassword, username=remotelogin,
                                 pub_key_file=pub_key_file, adminusername=remoteadmlogin)
-            if not check_ssh_admin_connection(hostname=hostname, remoteadminlogin=remoteadmlogin, key_file=key_file):
-                raise Exception()
+           # if not check_ssh_admin_connection(hostname=hostname, remoteadminlogin=remoteadmlogin, key_file=key_file):
+           #     raise Exception()
         except Exception as e:
             logger.error(e)
-            raise Exception("Create remote admin failled!")
+            raise Exception("Create remote admin failled! {}".format(e))
         try:
             ca = Ca(name=name, hostname=hostname, type=NodeType.CA, login=remoteadmlogin, key_file=key_file)
             self.SaveRecord(ca)

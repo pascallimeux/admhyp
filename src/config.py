@@ -5,10 +5,9 @@ Created on 28 june 2017
 '''
 
 
-import os, sys, logging
+import os, logging
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 def appconf():
     args = os.getenv('APP_SETTINGS', 'config.DevelopmentConfig').split(".")
@@ -19,9 +18,9 @@ def appconf():
 import getpass
 LOCALLOGIN = getpass.getuser()
 
+# default login and password for hyperledger administrator
 DEFAULTADMNAME="admin"
 DEFAULTADMPWD="orange2017!"
-
 
 # hyperledger tag version for github
 HYP_TAG_NAME = "v1.0.0-beta"
@@ -31,22 +30,7 @@ GOPATH = "/opt/gopath"
 BIN_DIR = ROOT_DIR + "/data/bin/"
 CONF_DIR = ROOT_DIR + "/data/conf/"
 
-MSREPO = " ../data/msp"
-TGZREPO = "../data/tarballs/"
-TGZBINNAME = "binaries.tgz"
-DOCKERIMAGEREPO = "../data/dockerimage/"
-
-fabric = "fabric"
-fabric_ca = "fabric-ca"
-git_url_hyperledger = "https://gerrit.hyperledger.org/r/"
-git_url_fabric = git_url_hyperledger + fabric + ".git"
-git_url_fabric_ca = git_url_hyperledger + fabric_ca + ".git"
-
 hyperledger_local_repo = os.environ.get("GOPATH") + "/src/github.com/hyperledger"
-fabric_ca_local_repo = hyperledger_local_repo + "/" + fabric_ca
-fabric_local_repo = hyperledger_local_repo + "/" + fabric
-fabric_ca_bin_local_repo = fabric_ca_local_repo + "/bin"
-fabric_bin_local_repo = fabric_local_repo + "/build/bin"
 
 class BaseConfig(object):
     """Base configuration."""
@@ -63,7 +47,7 @@ class BaseConfig(object):
     SQLALCHEMY_DATABASE_URI = "sqlite:///{0}/db/admhyp.db".format(ROOT_DIR)
 
     #  timeout for ssh connection
-    SSHCNXTIMEOUT = 3
+    SSHCNXTIMEOUT = 1
 
     # default port for ssh
     SSHDEFAULTPORT = 22

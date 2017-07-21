@@ -8,7 +8,7 @@ from sqlalchemy import Column, String, Date, Table, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
 import datetime
-from common.log import get_logger
+from app.common.log import get_logger
 
 logger = get_logger()
 

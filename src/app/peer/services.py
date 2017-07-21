@@ -7,10 +7,10 @@ Created on 30 june 2017
 from app.common.services import Services, ObjectNotFoundException
 from app.peer.model import Peer
 from app.database import get_session
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
 from app.common.constants import NodeType
-from core.remotecommands import create_remote_connection, check_ssh_admin_connection
+from app.common.rcmds import create_remote_connection, check_ssh_admin_connection
 
 
 class PeerServices(Services):
@@ -18,8 +18,8 @@ class PeerServices(Services):
     def create_peer(self, name, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
         try:
             create_remote_connection(hostname=hostname, password=remotepassword, username=remotelogin, pub_key_file=pub_key_file, adminusername=remoteadmlogin)
-            if not check_ssh_admin_connection(hostname=hostname, remoteadminlogin=remoteadmlogin, key_file=key_file):
-                raise Exception()
+            #if not check_ssh_admin_connection(hostname=hostname, remoteadminlogin=remoteadmlogin, key_file=key_file):
+            #    raise Exception()
         except Exception as e:
             logger.error(e)
             raise Exception("Create remote admin failled!")
@@ -47,13 +47,18 @@ class PeerServices(Services):
     def get_peers(self):
         return Peer.query.all()
 
-    def add_ca(self, name, ca_id):
+    def add_ca(self, name, ca):
         try:
+            ca.register_node(nodename=name, password="pwd")
+            ca.enroll_node(nodename=name, password="pwd")
+            tgz = ca.get_msp(name=name)
             peer = self.get_peer(name)
-            peer.ca = ca_id
+            peer.set_msp(tgz, name)
+            peer.ca = ca.id
             self.SaveRecord(peer)
         except Exception as e:
             get_session().rollback()
             logger.error("{0}".format(e))
             raise Exception("Data not update, database error!")
         return peer
+

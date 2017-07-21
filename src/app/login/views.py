@@ -4,9 +4,9 @@ Created on 29 june 2017
 @author: pascal limeux
 '''
 
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
-from flask import flash, Blueprint, session, g, request, redirect, url_for, render_template, Response
+from flask import flash, Blueprint, session, request, render_template
 from app.login.forms import LoginForm
 from app.login.services import UserServices
 from functools import wraps

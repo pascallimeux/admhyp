@@ -1,7 +1,9 @@
 import os
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
 from config import DEFAULTADMNAME, DEFAULTADMPWD
+
+
 def build_folders(remotelogin):
    return ("mkdir -p /var/hyperledger/log " 
          "&& mkdir -p /var/hyperledger/.keys/admin " 
@@ -44,7 +46,7 @@ def is_deployed(type):
     return "[ -f /var/hyperledger/.deployed ] && cat /var/hyperledger/.deployed |grep {0} && echo True || echo False".format(type)
 
 def write_deployed(type):
-    return ("echo {0} installed $(date) > /var/hyperledger/.deployed".format(type))
+    return ("echo {0} installed $(date) >> /var/hyperledger/.deployed".format(type))
 
 def uncompress_msp():
     return "cd /var/hyperledger && tar xzf msp.tgz -C /var/hyperledger/.keys && rm msp.tgz"

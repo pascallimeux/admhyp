@@ -4,11 +4,6 @@ Created on 29 june 2017
 @author: pascal limeux
 '''
 
-
-from flask import request, Blueprint, session, render_template
-from common.log import get_logger
-logger = get_logger()
-from app.login.views import login_required
 from flask import flash, render_template, request
 from flask import Blueprint
 from app.channel.forms import ChannelForm
@@ -16,7 +11,7 @@ from app.orderer.services import OrdererServices
 from app.peer.services import PeerServices
 from app.channel.services import ChannelServices
 from app.ca.services import CaServices
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
 from app.login.views import login_required
 

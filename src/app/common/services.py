@@ -1,5 +1,5 @@
 from app.database import get_session, init_db
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
 
 
@@ -17,9 +17,7 @@ class Services():
             get_session().commit()
         except Exception as e:
             get_session().rollback()
-            logger.error("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
             logger.error("{0}".format(e))
-            logger.error("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
             raise e
 
     def CreateDB(self):

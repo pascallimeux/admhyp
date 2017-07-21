@@ -7,7 +7,7 @@ Created on 3 july 2017
 import os
 from flask import Flask, render_template, request
 from app.database import get_session
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
 
 app = Flask(__name__, static_folder='static', template_folder="templates")

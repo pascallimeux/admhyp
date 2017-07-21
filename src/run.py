@@ -14,10 +14,10 @@ import argparse
 parser = argparse.ArgumentParser(description='description')
 parser.add_argument('-p', '--port', type=int, help='port to expose API', required=False)
 from config import appconf
-from common.utils import get_local_ipaddress
+from app.common.lcmds import get_local_ipaddress
 from app import app
 
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
 
 def user_is_logged_in():

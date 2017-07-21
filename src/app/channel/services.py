@@ -9,7 +9,7 @@ from app.database import get_session
 from app.ca.services import CaServices
 from app.orderer.services import OrdererServices
 from app.peer.services import PeerServices
-from common.log import get_logger
+from app.common.log import get_logger
 logger = get_logger()
 caService = CaServices()
 peerService = PeerServices()
