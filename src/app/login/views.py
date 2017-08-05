@@ -10,6 +10,7 @@ from flask import flash, Blueprint, session, request, render_template
 from app.login.forms import LoginForm
 from app.login.services import UserServices
 from functools import wraps
+from app.common.log import log_function_call
 userServices = UserServices()
 
 login_app = Blueprint('login_app',__name__)
@@ -23,6 +24,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 @login_app.route('/')
 def home():
     logger.debug("home page started")
@@ -32,8 +34,9 @@ def home():
         return render_template('main/home.html')
 
 @login_app.route('/login', methods=['POST'])
+@log_function_call
 def login():
-    logger.debug("check credential for {}".format(str(request.form['username'])))
+    #logger.debug("check credential for {}".format(str(request.form['username'])))
     try:
         result = userServices.CheckUser(username=str(request.form['username']),password=str(request.form['password']))
         if result:
@@ -49,22 +52,23 @@ def login():
 
 @login_app.route("/logout")
 @login_required
+@log_function_call
 def logout():
-    logger.debug("logout")
     session['logged_in'] = False
     return home()
 
+
 @login_app.route("/about")
 @login_required
+@log_function_call
 def about():
-    logger.debug("about")
     return render_template('main/about.html')
 
 
 @login_app.route("/register", methods=['GET', 'POST'])
 @login_required
+@log_function_call
 def register():
-    logger.debug("register page started")
     form = LoginForm(request.form)
     if request.method == 'POST':
         try:

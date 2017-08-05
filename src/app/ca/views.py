@@ -20,7 +20,7 @@ caService = CaServices()
 @ca_app.route("/ca", methods=['GET', 'POST'])
 @login_required
 def create():
-    logger.debug("{0} /ca resource invocation".format(request.method))
+    logger.debug("Invoke API: {0} /ca".format(request.method))
     form = CaForm(request.form)
     if request.method == 'POST':
         name=request.form['name']
@@ -43,7 +43,7 @@ def create():
 @ca_app.route("/cas")
 @login_required
 def list():
-    logger.debug("{0} /listcas resource invocation".format(request.method))
+    logger.debug("Invoke API: {0} /cas".format(request.method))
     try:
         cas = caService.get_cas()
     except Exception as e:
@@ -53,7 +53,7 @@ def list():
 @ca_app.route("/ca/<name>", methods=['GET', 'POST'])
 @login_required
 def manage(name):
-    logger.debug("{0} /ca/{1} resource invocation".format(request.method, name))
+    logger.debug("Invoke API: {0} /ca/{1}".format(request.method, name))
     try:
         ca = caService.get_ca(name)
     except Exception as e:
@@ -63,7 +63,7 @@ def manage(name):
 @ca_app.route("/ca/<name>/deploy")
 @login_required
 def deploy(name):
-    logger.debug("{0} /ca/{1}/deploy resource invocation".format(request.method, name))
+    logger.debug("Invoke API: {0} /ca/{1}/deploy".format(request.method, name))
     try:
         ca = caService.get_ca(name)
         ca.deploy()
@@ -74,7 +74,7 @@ def deploy(name):
 @ca_app.route("/ca/<name>/start")
 @login_required
 def start(name):
-    logger.debug("{0} /ca/{1}/start resource invocation".format(request.method, name))
+    logger.debug("Invoke API: {0} /ca/{1}/start".format(request.method, name))
     try:
         ca = caService.get_ca(name)
         ca.start()
@@ -85,7 +85,7 @@ def start(name):
 @ca_app.route("/ca/<name>/stop")
 @login_required
 def stop(name):
-    logger.debug("{0} /ca/{1}/stop resource invocation".format(request.method, name))
+    logger.debug("Invoke API: {0} /ca/{1}/stop".format(request.method, name))
     try:
         ca = caService.get_ca(name)
         ca.stop()
@@ -96,7 +96,7 @@ def stop(name):
 @ca_app.route("/ca/<name>/register", methods=['GET', 'POST'])
 @login_required
 def register(name):
-    logger.debug("{0} /ca/{1}/register resource invocation".format(request.method, name))
+    logger.debug("Invoke API: {0} /ca/{1}/register".format(request.method, name))
     form = RegisterForm(request.form)
     logger.error(form.errors)
     try:
@@ -116,7 +116,7 @@ def register(name):
 @ca_app.route("/ca/<name>/createadmin", methods=['GET', 'POST'])
 @login_required
 def create_admin(name):
-    logger.debug("{0} /ca/{1}/createadmin resource invocation".format(request.method, name))
+    logger.debug("Invoke API: {0} /ca/{1}/createadmin".format(request.method, name))
     form = RegisterForm(request.form)
     logger.error(form.errors)
     try:
@@ -136,7 +136,7 @@ def create_admin(name):
 @ca_app.route("/ca/<name>/enroll", methods=['GET', 'POST'])
 @login_required
 def enroll(name):
-    logger.debug("{0} /ca/{1}/enroll resource invocation".format(request.method, name))
+    logger.debug("Invoke API: {0} /ca/{1}/enroll".format(request.method, name))
     form = RegisterForm(request.form)
     logger.error(form.errors)
     try:

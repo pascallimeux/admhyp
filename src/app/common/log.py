@@ -7,10 +7,21 @@ Created on 28 june 2017
 import logging
 from logging.handlers import RotatingFileHandler
 from config import appconf
-
+from functools import wraps
 
 logger = None
 
+def log_function_call(f):
+    @wraps(f)
+    def log (*args, **kwargs):
+        logger.debug("Call function {0}({1})".format(f.__name__, str(kwargs)
+                                                      .replace(":", "=")
+                                                      .replace('\'', '')
+                                                      .replace('{', '')
+                                                      .replace('}','')
+                                                      .replace(' ', '')))
+        return f (*args, **kwargs)
+    return log
 
 def get_logger():
     global logger
