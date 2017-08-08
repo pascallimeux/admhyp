@@ -11,7 +11,7 @@ class Enum(set):
             return name
         raise AttributeError
 
-NodeType = Enum(['PEER', 'CA', 'ORDERER'])
+NodeType = Enum(['PEER', 'CA', 'ORDERER', 'CHANNEL', 'ROOT'])
 NodeStatus = Enum(['CREATED', 'NOTCONNECT', 'CONNECTED', 'UNDEPLOYED', 'DEPLOYED', 'STARTED', 'STOPPED'])
 
 PEERPROCESSNAME="peer"

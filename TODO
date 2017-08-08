@@ -96,5 +96,12 @@ createChannelConfigTransaction
 	../bin/configtxgen -channelID orange -profile MPLOrgOrdererGenesis -outputBlock orderer.genesis.block -inspectBlock orderer.genesis.block
 
 
+d3 js force collapsible oriented graph
+https://bl.ocks.org/mbostock/1062288
+https://bl.ocks.org/mbostock/1093130
 
-	
+http://bl.ocks.org/eyaler/10586116
+http://bl.ocks.org/mbostock/2706022
+
+code loic: http://g-vm-iot-dev-1:8000/script.js
+
