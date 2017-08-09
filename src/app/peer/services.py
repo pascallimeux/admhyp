@@ -41,7 +41,7 @@ class PeerServices(Services):
     def get_peer(self, name):
         peer = Peer.query.filter(Peer.name == name).first()
         if peer == None:
-            raise ObjectNotFoundException()
+            raise ObjectNotFoundException("no peer for name:{}".format(name))
         return peer
 
     def get_peers(self):

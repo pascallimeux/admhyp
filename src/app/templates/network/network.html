@@ -26,7 +26,6 @@
     var link = svg.selectAll(".link"),
         node = svg.selectAll(".node");
 
-
     root = {{ network | safe }}.nodes;
     update();
 
@@ -71,10 +70,10 @@
             return d.type == "{{ NodeType.ORDERER }}";
         })
         .append("rect")
-        .attr("width", function(d) { return d.size / 10 || 30; })
-        .attr("height", function(d) { return d.size / 10 || 30; })
-        .attr("x", function(d) { return -d.size / 20 || -15; })
-        .attr("y", function(d) { return -d.size / 20 || -15; });
+        .attr("width", function(d) { return d.size / 10 || 40; })
+        .attr("height", function(d) { return d.size / 10 || 40; })
+        .attr("x", function(d) { return -d.size / 20 || -20; })
+        .attr("y", function(d) { return -d.size / 20 || -20; });
 
 
 
@@ -82,14 +81,15 @@
             return d.type == "{{ NodeType.CHANNEL }}";
         })
         .append("ellipse")
-        .attr("rx", function(d) { return d.size / 15 || 15; })
-        .attr("ry", function(d) { return d.size / 25 || 10; });
+        .attr("rx", function(d) { return d.size / 15 || 30; })
+        .attr("ry", function(d) { return d.size / 25 || 20; });
 
         node.filter(function(d){
             return d.type == "{{ NodeType.CA }}";
         })
         .append("polygon")
-        .attr("points", "-20,-25 0,12 20,-25");
+        //.attr("points", "-20,-25 0,12 20,-25");
+        .attr("points", "-25,-30 0,15 25,-30");
 
         node.filter(function(d){
             return d.type == "{{ NodeType.CHANNEL }}";
@@ -137,6 +137,7 @@
     function getNodeDescription(n){
         var ret = new Map()
         ret.set("name", n.name)
+        ret.set("hostname", n.hostname)
         ret.set("type", n.type)
         ret.set("state", n.state)
         return ret
@@ -194,27 +195,27 @@
     function click(d) {
       switch (d.type) {
       case "{{ NodeType.CHANNEL }}" :
-          window.location.href = "{{ url_for('channel_app.list') }}";
-          console.log("name= "+d.name)
-          break;
+          window.location.href = get_url("channel/"+d.name)
           break;
 
       case "{{ NodeType.PEER }}" :
-          window.location.href = "{{ url_for('peer_app.list') }}";
-          console.log("name= "+d.name)
+          window.location.href = get_url("peer/"+d.name)
           break;
 
       case "{{ NodeType.ORDERER }}" :
-          window.location.href = "{{ url_for('orderer_app.list') }}";
-          console.log("name= "+d.name)
+          window.location.href = get_url("orderer/"+d.name)
           break;
 
       case "{{ NodeType.CA }}" :
-          window.location.href = "{{ url_for('ca_app.list') }}";
-          console.log("name= "+d.name)
+          window.location.href = get_url("ca/"+d.name)
           break;
       }
     }
+
+    function get_url(uri){
+        return "http://"+window.location.hostname+":"+window.location.port+"/"+uri
+    }
+
 
     // Returns a list of all nodes under the root.
     function flatten(root) {

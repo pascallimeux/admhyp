@@ -41,7 +41,7 @@ class OrdererServices(Services):
     def get_orderer(self, name):
         orderer = Orderer.query.filter(Orderer.name == name).first()
         if orderer == None:
-            raise ObjectNotFoundException()
+            raise ObjectNotFoundException("no orderer for name:{}".format(name))
         return orderer
 
     def get_orderers(self):

@@ -58,6 +58,7 @@ def manage(name):
         ca = caService.get_ca(name)
     except Exception as e:
         flash('Error: {}'.format(e))
+        return render_template('main/home.html')
     return render_template('ca/camngt.html', ca=ca)
 
 @ca_app.route("/ca/<name>/deploy")

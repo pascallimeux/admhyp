@@ -44,7 +44,7 @@ class ChannelServices(Services):
     def get_channel(self, name):
         channel = Channel.query.filter(Channel.name == name).first()
         if channel == None:
-            raise ObjectNotFoundException()
+            raise ObjectNotFoundException("no channel for name:{}".format(name))
         logger.debug(channel)
         return channel
 

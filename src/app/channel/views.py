@@ -71,4 +71,5 @@ def manage(name):
         channel = channelService.get_channel(name)
     except Exception as e:
         flash('Error: {}'.format(e))
+        return render_template('main/home.html')
     return render_template('channel/channelmngt.html', channel=channel)

@@ -68,6 +68,7 @@ def manage(name):
         peer = peerService.get_peer(name)
     except Exception as e:
         flash('Error: {}'.format(e))
+        return render_template('main/home.html')
     return render_template('peer/peermngt.html', peer=peer, cas=cas)
 
 @peer_app.route("/peer/<name>/deploy")

@@ -63,6 +63,7 @@ def manage(name):
         orderer = ordererService.get_orderer(name)
     except Exception as e:
         flash('Error: {}'.format(e))
+        return render_template('main/home.html')
     return render_template('orderer/orderermngt.html', orderer=orderer, cas=cas)
 
 @orderer_app.route("/orderer/<name>/deploy")

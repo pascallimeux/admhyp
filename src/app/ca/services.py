@@ -43,7 +43,7 @@ class CaServices(Services):
     def get_ca(self, name):
         ca = Ca.query.filter(Ca.name == name).first()
         if ca == None:
-            raise ObjectNotFoundException()
+            raise ObjectNotFoundException("no ca for name:{}".format(name))
         return ca
 
     @log_function_call

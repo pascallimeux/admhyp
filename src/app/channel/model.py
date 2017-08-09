@@ -33,4 +33,3 @@ class Channel(Base):
     peers = relationship("Peer", secondary=association_table_peer)
     created = Column(Date(), default=datetime.date.today())
 
-
