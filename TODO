@@ -105,3 +105,64 @@ http://bl.ocks.org/mbostock/2706022
 
 code loic: http://g-vm-iot-dev-1:8000/script.js
 
+
+IHM orange: http://boosted.orange.com/
+
+doc python pour le manager :
+http://www.steves-internet-guide.com/into-mqtt-python-client/
+
+doc pour l' agent en go: https://github.com/eclipse/paho.mqtt.golang
+
+doc pour le server mqtt (broker)
+https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-the-mosquitto-mqtt-messaging-broker-on-ubuntu-16-04
+
+
+
+Architecture
+
+     Une application manager (développée en Python)
+         - service web
+         - une BDD
+         - service de déploiements des nodes
+         - service de supervision des nodes
+
+
+     un broker (MQTT)
+         - permet la communication entre les nodes (agents) et le manager (exploitation/supervision)
+
+     des agents (développés en Go)
+         - déployer sur les nodes, il assure la remonté d'information (états du système et des applicatifs), et l'execution des ordres provenant du manager.
+
+
+
+
+1) Se connecter au node en ssh (login/pwd)
+2) transférer l'agent dans le repertoire /tmp
+3) executer l'agent
+    Créer le répertoire de l'application, s'il n'existe pas
+    créer le compte admin (
+
+3) Envoyer le code de l'agent ( recopier l'agent dans le repertoire s'il
+n'existe pas ou si sa version est inférieure)
+
+4) Executer la méthode init() de l'agent si elle n'a pas encore été
+executée.
+
+     méthode init()
+
+     - Creer un compte admin (login/key)
+
+     - créer un service pour activer l'agent au démarrage du système.
+
+     méthode start()
+
+     - Envoie périodique d'information sur l'état du système
+
+     - attente d'ordre provenant du manager
+
+
+     méthode update()
+
+     - mise à jour de l'agent
+
+

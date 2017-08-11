@@ -87,16 +87,16 @@ def enroll_node(username, password):
 
 def create_remote_admin(adminusername, username, pub_key):
     return ("useradd -m {0} -s /bin/bash "
-            "&& echo  \"{0} ALL=(ALL:ALL) NOPASSWD:ALL\" >> /home/{1}/remoteadm "
-            "&& chown root.root /home/{1}/remoteadm "
-            "&& mv /home/{1}/remoteadm /etc/sudoers.d/{0} " 
-            "&& chmod ug-w /etc/sudoers.d/{0} "
-            "&& mkdir /home/{0}/.ssh "
-            "&& chmod 777 -R /home/{0}/.ssh "
-            "&& echo {2} >> /home/{0}/.ssh/authorized_keys "
-            "&& chown -R {0}.{0} /home/{0}/.ssh "
-            "&& chmod 700 /home/{0}/.ssh "
-            "&& chmod 600 /home/{0}/.ssh/authorized_keys").format(adminusername, username, pub_key)
+            "|| echo  \"{0} ALL=(ALL:ALL) NOPASSWD:ALL\" >> /home/{1}/remoteadm "
+            "&& sudo chown root.root /home/{1}/remoteadm "
+            "&& sudo mv /home/{1}/remoteadm /etc/sudoers.d/{0} " 
+            "&& sudo chmod ug-w /etc/sudoers.d/{0} "
+            "&& sudo mkdir /home/{0}/.ssh "
+            "|| sudo chmod 777 -R /home/{0}/.ssh "
+            "&& sudo echo {2} >> /home/{0}/.ssh/authorized_keys "
+            "&& sudo chown -R {0}.{0} /home/{0}/.ssh "
+            "&& sudo chmod 700 /home/{0}/.ssh "
+            "&& sudo chmod 600 /home/{0}/.ssh/authorized_keys").format(adminusername, username, pub_key)
 
 def remote_file_4_download_msp(nodename):
     return "/var/hyperledger/.keys/{0}.tgz".format(nodename)

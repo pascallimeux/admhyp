@@ -3,8 +3,7 @@
 Created on 22 june 2017
 @author: pascal limeux
 '''
-
-import paramiko
+import paramiko, logging
 from config import appconf
 from app.common.log import get_logger
 logger = get_logger()
@@ -33,7 +32,7 @@ class Ssh:
         self.client = paramiko.client.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         if key_file is not None:
-            self.key_file = key_file
+            self.pubkey_file = key_file
             self.connect_from_key()
         else:
             self.password = password
@@ -41,6 +40,7 @@ class Ssh:
 
     def connect_from_login_pwd(self):
         try:
+            logger.debug ("connect from login/pwd")
             self.client.load_system_host_keys()
             self.client.connect(self.hostname, self.port, self.username, self.password, timeout=appconf().SSHCNXTIMEOUT)
         except Exception as e:
@@ -50,11 +50,12 @@ class Ssh:
 
     def connect_from_key(self):
         try:
+            logger.debug ("connect from key")
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.client.connect(hostname=self.hostname, username=self.username, key_filename=self.key_file, timeout=appconf().SSHCNXTIMEOUT)
+            self.client.connect(hostname=self.hostname, username=self.username, key_filename=self.pubkey_file, timeout=appconf().SSHCNXTIMEOUT)
         except Exception as e:
             logger.error(e)
-            raise Exception("fail connection: {0} with private key {1}".format(self.hostname, self.key_file))
+            raise Exception("fail connection: {0} with private key {1}".format(self.hostname, self.pubkey_file))
 
     def exec_cmd(self, command, sudo=False):
         password = False

@@ -42,9 +42,7 @@
 
       // Update links.
       link = link.data(links, function(d) { return d.target.id; });
-
       link.exit().remove();
-
       link.enter().insert("line", ".node")
           .attr("class", "link");
 
@@ -74,8 +72,6 @@
         .attr("height", function(d) { return d.size / 10 || 40; })
         .attr("x", function(d) { return -d.size / 20 || -20; })
         .attr("y", function(d) { return -d.size / 20 || -20; });
-
-
 
         node.filter(function(d){
             return d.type == "{{ NodeType.CHANNEL }}";

@@ -111,6 +111,15 @@ function install_docker(){
     echo -e "${GREEN}$(docker-compose --version) installed${NC}"
 }
 
+function install_python() {
+    sudo add-apt-repository ppa:jonathonf/python-3.6
+    sudo apt update && sudo apt install -y python3.6
+}
+
+function generate_keys(){
+    ssh-keygen -f $HOME/.ssh/id_rsa -t rsa -N ''
+    chmod 600 $HOME/.ssh/id_rsa
+}
 #echo -e "${GREEN}distribution: $DISTRIB ${NC}"
 #echo "${YELLOW}System updating.... ${NC}"
 #update_system
@@ -118,5 +127,7 @@ function install_docker(){
 #create_admin_account $ACCOUNT $ENC_PWD
 #read -p "Press any key to install go: "
 install_go
+install_python
+generate_keys
 #read -p "Press any key to install docker and docker-compose: "
 #install_docker
