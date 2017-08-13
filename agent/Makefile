@@ -26,8 +26,10 @@
 # depend: installs test dependencies
 # unit-test: runs all the unit tests
 # integration-test: runs all the integration tests
-# clean: stops docker conatainers used for integration testing
+# clean: stops docker containers used for integration testing
 #
+
+PUBKEY="$(shell cat /home/pascal/.ssh/id_rsa.pub)"
 
 .DEFAULT_GOAL := bin
 .PHONY: help
@@ -48,4 +50,21 @@ init-env:
 	@go get golang.org/x/net/websocket
 	@go get golang.org/x/net/proxy
 	@go get github.com/op/go-logging
+	@sudo apt install upx -y
 
+build:
+	@GOOS=linux go build -ldflags="-s -w" -o hyp-agent agent.go
+
+run:
+	@sudo ./hyp-agent -broker="tcp://localhost:1883" -pubkey=${PUBKEY} -loglevel=info -init=true -name=agent1
+
+stop:
+	@sudo pkill -f hyp-agent
+
+clean:
+	@sudo rm /etc/sudoers.d/orangeadm
+	@sudo rm -R /var/hyperledger
+	@sudo userdel -r orangeadm
+	@sudo rm -R /lib/systemd/system/hyp-agent.service
+	@sudo systemctl stop hyp-agent.service
+	@sudo systemctl disable hyp-agent.service

@@ -1,53 +1,49 @@
 package main
 
 import (
-"fmt"
-//import the Paho Go MQTT library
-MQTT "github.com/eclipse/paho.mqtt.golang"
-"os"
-"time"
-	"github.com/op/go-logging"
-
+	"fmt"
+	MQTT "github.com/eclipse/paho.mqtt.golang"
+	"os"
+	"time"
 	"github.com/pascallimeux/admhyp/agent/utils"
-
+	"flag"
+	"github.com/op/go-logging"
 )
-var log = logging.MustGetLogger("agent")
+
+var log *logging.Logger
+
+const (
+	AGENTFILENAME = "hyp-agent"
+	REPOSITORY    = "/var/hyperledger"
+	ACCOUNTNAME   = "orangeadm"
+	SERVICENAME   = "hyp-agent.service"
+)
 
 type Agent struct {
-	BrokerAddress   string
+	BrokerAddress  string
+	AgentFileName  string
+	AccountName    string
+	ServiceName    string
+	Repository     string
+	AgentName      string
+	MqttClient     MQTT.Client
 }
 
-func(a *Agent) Init(){
-	//utils.Create_directory("/var/hyperledger")
-	//a.MoveAndRestart("/var/hyperledger/agent")
-	//a.PersistAgent()
-	utils.Create_admin_account("orangeadm", "kkkkkkk")
-}
-
-func (a *Agent) PersistAgent(){
-	utils.Is_service_active("agent_hyp.service")
-}
-
-func (a *Agent) MoveAndRestart(newpath string) error{
-	agentPath, err := utils.GetProgrammFullName()
+func(a *Agent) Init(publicKey string) error{
+	log.Info("Agent initialization...")
+	err := a.createUser(a.AccountName, publicKey)
 	if err != nil {
 		return err
 	}
-	if (newpath == agentPath){
-		log.Debug("agent is arleady at the good place: " + agentPath)
-		return nil
-	}
-	log.Debug("Move agent from: " + agentPath + " to " + newpath)
-	err = utils.MoveFile(agentPath, newpath)
+	err = a.createAgentEnv(a.Repository)
 	if err != nil {
 		return err
 	}
-	return a.startNewAgent(newpath)
-}
-
-func (a *Agent) startNewAgent(path string) error {
-	log.Debug("startAgent(path:"+path+") : calling method -")
-	err := utils.Exec_detach_cmd(path)
+	err = a.Move(a.AccountName, a.Repository+"/"+a.AgentFileName, a.AgentFileName)
+	if err != nil {
+		return err
+	}
+	err = a.PersistAgent(a.ServiceName)
 	if err != nil {
 		return err
 	}
@@ -55,59 +51,161 @@ func (a *Agent) startNewAgent(path string) error {
 	return nil
 }
 
+func(a *Agent) Start() error{
+	log.Info("Agent starting...")
+	opts := MQTT.NewClientOptions().AddBroker(a.BrokerAddress)
+	opts.SetClientID(a.AgentName)
+	opts.SetDefaultPublishHandler(messageHandler)
 
-//define a function for the default message handler
-var f MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
-	fmt.Printf("TOPIC: %s\n", msg.Topic())
-	fmt.Printf("MSG: %s\n", msg.Payload())
-}
-
-
-
-
-
-func main() {
-	agent := Agent{
-		BrokerAddress:            "tcp://127.0.0.1:1883",
-	}
-	agent.Init()
-}
-
-func main2() {
-	//create a ClientOptions struct setting the broker address, clientid, turn
-	//off trace output and set the default message handler
-	opts := MQTT.NewClientOptions().AddBroker("tcp://127.0.0.1:1883")
-	opts.SetClientID("agent2")
-	opts.SetDefaultPublishHandler(f)
-
-	//create and start a client using the above ClientOptions
-	c := MQTT.NewClient(opts)
-	if token := c.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
+	a.MqttClient = MQTT.NewClient(opts)
+	if token := a.MqttClient.Connect(); token.Wait() && token.Error() != nil {
+		return (token.Error())
 	}
 
-	//subscribe to the topic /go-mqtt/sample and request messages to be delivered
-	//at a maximum qos of zero, wait for the receipt to confirm the subscription
-	if token := c.Subscribe("go-mqtt/sample", 0, nil); token.Wait() && token.Error() != nil {
+	if token := a.MqttClient.Subscribe(a.AgentName+"/sample", 0, nil); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 		os.Exit(1)
 	}
 
-	//Publish 5 messages to /go-mqtt/sample at qos 1 and wait for the receipt
-	//from the server after sending each message
 	for i := 0; i < 5; i++ {
 		text := fmt.Sprintf("this is msg #%d!", i)
-		token := c.Publish("go-mqtt/sample", 0, false, text)
+		token := a.MqttClient.Publish(a.AgentName+"/sample", 0, false, text)
 		token.Wait()
 	}
 
 	time.Sleep(3 * time.Second)
 
-	//unsubscribe from /go-mqtt/sample
-	if token := c.Unsubscribe("go-mqtt/sample"); token.Wait() && token.Error() != nil {
+	if token := a.MqttClient.Unsubscribe(a.AgentName+"/sample"); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 		os.Exit(1)
 	}
 
-	c.Disconnect(250)
+	a.MqttClient.Disconnect(250)
+	return nil
+}
+
+func (a *Agent) PersistAgent(serviceName string) error{
+	serviceContent := "[Unit]\n"
+	serviceContent = serviceContent + "Description=agent for hyperledger supervision\n"
+	serviceContent = serviceContent + "After=tlp-init.service\n\n"
+	serviceContent = serviceContent + "[Service]\n"
+	serviceContent = serviceContent + "User="+a.AccountName+"\n"
+	serviceContent = serviceContent + "ExecStart="+a.Repository+"/"+a.AgentFileName+"\n\n"
+	serviceContent = serviceContent + "[Install]\n"
+	serviceContent = serviceContent + "WantedBy=multi-user.target\n"
+	_, err := utils.CreateFile("/lib/systemd/system/"+a.ServiceName, serviceContent)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	cmd1 := "sudo chmod a+x /lib/systemd/system/"+serviceName
+	cmd2 := "sudo systemctl enable "+serviceName
+	cmd3 := "sudo systemctl start "+serviceName
+	_, err = utils.ExecCmd(cmd1)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	_, err = utils.ExecCmd(cmd2)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	_, err = utils.ExecCmd(cmd3)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+
+func (a *Agent) createAgentEnv(repo string) error{
+	_, err := utils.CreateDirectory(repo)
+	return err
+}
+
+func (a *Agent) createUser(username, publicKey string) error{
+	_, err := utils.CreateAccount(username)
+	if (err != nil){
+		return err
+	}
+	err = utils.AddSudo(username)
+	if (err != nil){
+		return err
+	}
+	if publicKey != "None" {
+		err = utils.AuthorizedKey(username, publicKey)
+		if (err != nil){
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *Agent) Move(accountName, newpath, agentName string) error{
+	agentPath, err := utils.GetProgrammFullName()
+	agentPath = agentPath+"/"+agentName
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	if (newpath == agentPath){
+		log.Info("agent is already at the good place: " + agentPath)
+		return nil
+	}
+	log.Info("Move agent from: " + agentPath + " to " + newpath)
+	err = utils.MoveFile(agentPath, newpath)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	cmd0 := "sudo chown "+accountName+"."+accountName+" "+newpath
+	_, err = utils.ExecCmd(cmd0)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	cmd1 := "sudo chmod 100 "+newpath
+	_, err = utils.ExecCmd(cmd1)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	//return a.startNewAgent(accountName, newpath)
+	return nil
+}
+
+func (a *Agent) startNewAgent(accountName, path string) error {
+	log.Debug("startAgent(path:"+path+") : calling method -")
+	err := utils.ExecDetachCmd(accountName, path)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	os.Exit(0)
+	return nil
+}
+
+
+var messageHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
+	fmt.Printf("TOPIC: %s\n", msg.Topic())
+	fmt.Printf("MSG: %s\n", msg.Payload())
+}
+
+func main() {
+	var brokerAdd = flag.String("broker", "tcp://127.0.0.1:1883", "broker address" )
+	var publicKey = flag.String("pubkey", "None", "admin ssh public key" )
+	var init = flag.Bool("init", false, "initialize agent" )
+	var logLevel = flag.String("loglevel", "debug", "level for log")
+	var agentName = flag.String("name", "agentX", "name of the agent")
+	flag.Parse()
+	log = utils.InitLog("agent", *logLevel)
+	log.Info("Init Agent: {broker:"+*brokerAdd+", agentName:"+ *agentName+", AccountName:"+ACCOUNTNAME+ " ,ServiceName:"+SERVICENAME+" ,Repository:"+REPOSITORY+"}")
+	agent := Agent{BrokerAddress:*brokerAdd, AccountName:ACCOUNTNAME, AgentFileName:AGENTFILENAME, ServiceName:SERVICENAME, Repository:REPOSITORY, AgentName:*agentName}
+	if *init {
+		agent.Init(*publicKey)
+	}else {
+		agent.Start()
+	}
 }
