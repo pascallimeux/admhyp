@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"strconv"
 	"path/filepath"
+	"math/rand"
 )
 
 func ExecDetachCmd(username, cmd string) error {
@@ -265,4 +266,13 @@ func MoveFile(source, destination string) error {
 		return err
 	}
 	return nil
+}
+
+func GenerateID(n int) string{
+	var letters = []rune("0123345678ABCDEF")
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+    return string(b)
 }

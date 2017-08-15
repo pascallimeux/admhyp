@@ -64,7 +64,7 @@ func (m *MqttHandler) unSubscribeTopics() error {
 	return nil
 }
 
-func (m *MqttHandler) PublishTopic(topicName, content string, ){
+func (m *MqttHandler) PublishTopic(topicName, content string){
 	log.Debug("publish on topic: "+topicName)
 	token := m.MqttClient.Publish(topicName, 0, false, content)
 	token.Wait()

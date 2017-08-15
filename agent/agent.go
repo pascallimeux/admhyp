@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"time"
 	"github.com/pascallimeux/admhyp/agent/utils"
+	"github.com/pascallimeux/admhyp/agent/message"
 	"flag"
 	"github.com/op/go-logging"
+
 )
 
 var log *logging.Logger
@@ -16,14 +17,16 @@ const (
 	REPOSITORY             = "/var/hyperledger"
 	ACCOUNTNAME            = "orangeadm"
 	SERVICENAME            = "hyp-agent.service"
-	STATUSTOPIC            = "status/"
-	ORDERTOPIC             = "orders/"
+	STATUSTOPIC            = "status/"	// status/clientID
+	ORDERTOPIC             = "orders/"	// orders/clientID
+	RESPONSETOPIC          = "responses/"   // responses/clientID/messageID
 	DEFAULTLOGLEVEL        = "debug"
 	DELAYPUBSYSSTATUS      = 10 *time.Second
 	AGENTINACTIVATIONDELAY = 500 * time.Millisecond
 	DEFAULTBROKERADD       = "tcp://127.0.0.1:1883" // __BROKERADD__
 	DEFAULTAGENTNAME       = "agentX" // __AGENTNAME__
 )
+
 
 type Agent struct {
 	AgentFileName  string
@@ -87,16 +90,21 @@ func(a *Agent) Start() error{
 }
 
 func(a *Agent) sendSystemStatus(){
-	status := "OK for the moment"
-	a.commHandler.PublishTopic(STATUSTOPIC+a.AgentName, status)
+	systemStatus := "OK for the moment"
+	message := &message.Message{Id:utils.GenerateID(16), Body:systemStatus}
+	json_mess, err := message.ToJsonStr()
+	if (err == nil){
+		a.commHandler.PublishTopic(STATUSTOPIC+a.AgentName, string(json_mess))
+	}
 }
 
-func (a *Agent) processingOrders(topic string, message []byte) {
-	if (string(message) == "stop"){
+func (a *Agent) processingOrders(topic string, bMessage []byte) {
+	response := message.ProcessingOrders(topic, bMessage)
+	json_resp, _ := response.ToJsonStr()
+	a.commHandler.PublishTopic(RESPONSETOPIC + a.AgentName + "/" + response.Id, json_resp)
+	if (response.Body == "Agent stopped..."){
 		a.stopAgent = true
 	}
-	fmt.Printf("TOPIC: %s\n", topic)
-	fmt.Printf("MSG: %s\n", message)
 }
 
 func (a *Agent) persistAgent(serviceName string) error{
@@ -200,7 +208,6 @@ func (a *Agent) startNewAgent(accountName, path string) error {
 	os.Exit(0)
 	return nil
 }
-
 
 
 func main() {
