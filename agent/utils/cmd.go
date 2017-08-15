@@ -72,26 +72,6 @@ func ExecCmd(cmd string) ([]byte, error){
 	return out, err
 }
 
-func IsServiceActif(servicename string) (bool, error){
-	cmd :="sudo systemctl is-active "+servicename
-	out, err := ExecCmd(cmd)
-	if err != nil {
-		log.Error(err)
-		return false, err
-	}
-	return !strings.Contains(fmt.Sprint(out), "inactive"), nil
-}
-
-func GetSystemUsername()(string, error){
-	usr, err := user.Current()
-	if err != nil {
-		log.Error(err)
-		return "", err
-	}
-	return usr.Name, nil
-}
-
-
 func CreateDirectory(path string)(bool, error){
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		cmd := "sudo mkdir -p " + path
@@ -204,7 +184,7 @@ func addKey(ssh_file, pubkey string) (bool, error){
 		log.Info(fmt.Sprint("key already authorized!"))
 		return false, nil
 	}
-	err = AppendStringToFile(ssh_file, pubkey)
+	err = appendStringToFile(ssh_file, pubkey)
 	if err != nil {
 		log.Error(err)
         	return false, err
@@ -213,7 +193,7 @@ func addKey(ssh_file, pubkey string) (bool, error){
 	return true, nil
 }
 
-func AppendStringToFile(path, text string) error {
+func appendStringToFile(path, text string) error {
       f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
       if err != nil {
 	      log.Error(err)

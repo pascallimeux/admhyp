@@ -53,10 +53,14 @@ init-env:
 	@sudo apt install upx -y
 
 build:
-	@GOOS=linux go build -ldflags="-s -w" -o hyp-agent agent.go
+	@GOOS=linux go build -ldflags="-s -w" -o ./bin/hyp-agent agent.go
+
+build-prod:
+	@GOOS=linux go build -ldflags="-s -w" -o ./bin/hyp-agent agent.go
+	@upx -9 ./bin/hyp-agent
 
 run:
-	@sudo ./hyp-agent -broker="tcp://localhost:1883" -pubkey=${PUBKEY} -loglevel=info -init=true -name=agent1
+	@sudo ./bin/hyp-agent -broker="tcp://localhost:1883" -pubkey=${PUBKEY} -loglevel=debug -init=false -name=agent1
 
 stop:
 	@sudo pkill -f hyp-agent
