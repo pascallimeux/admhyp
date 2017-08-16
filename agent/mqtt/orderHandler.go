@@ -1,7 +1,8 @@
-package message
+package mqtt
 
 import (
 	"encoding/json"
+	"github.com/pascallimeux/admhyp/agent/log"
 )
 
 func ProcessingOrders(topic string, bMessage []byte) Message {
@@ -9,12 +10,13 @@ func ProcessingOrders(topic string, bMessage []byte) Message {
 	responseContent := ""
 	err := json.Unmarshal(bMessage, &message)
 	if (err != nil) {
-		log.Error(err.Error())
-		response := Message{Id:"FFFFFFFFFFFFFFFF", Body:"Bad format!"}
+		log.Error(err)
+		response := Message{Id:GenerateID(16), Error:"Bad format!"}
 		return response
 	}
 	log.Debug("TOPIC: " + topic + "\n")
-	log.Debug("MSG: " + message.Body + "\n")
+	log.Debug("MSG  : " + message.Body + "\n")
+	log.Debug("ERROR: " + message.Error + "\n")
 	if (message.Body == "stop") {
 		responseContent = "Agent stopped..."
 	}else{

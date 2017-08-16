@@ -88,7 +88,7 @@ class Ssh:
     def print_totals(self, transferred, toBeTransferred):
         print ("Transferred: {0}\tOut of: {1}".format(transferred, toBeTransferred))
 
-    def upload_file(self, localFile, remoteFile):
+    def Upload_file(self, localFile, remoteFile):
         logger.debug("Upload file from {0} to {1}:{2}".format(localFile, self.hostname, remoteFile))
         try:
             sftp = self.client.open_sftp()

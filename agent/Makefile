@@ -46,11 +46,16 @@ help:
 	@echo
 
 init-env:
+	@sudo apt-add-repository ppa:mosquitto-dev/mosquitto-ppa
+	@sudo apt update && sudo apt install mosquitto -y
+	@sudo apt install mosquitto-clients -y
+	@sudo service mosquitto restart
+	@sudo apt install upx -y
 	@go get github.com/eclipse/paho.mqtt.golang
 	@go get golang.org/x/net/websocket
 	@go get golang.org/x/net/proxy
 	@go get github.com/op/go-logging
-	@sudo apt install upx -y
+	@go get github.com/shirou/gopsutil/...
 
 build:
 	@GOOS=linux go build -ldflags="-s -w" -o ./bin/hyp-agent agent.go

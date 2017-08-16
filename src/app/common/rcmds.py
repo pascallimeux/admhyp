@@ -6,9 +6,10 @@ Created on 22 june 2017
 
 from app.common.ssh import Ssh
 from app.common.commands import create_remote_admin
-from config import appconf
 from app.common.log import get_logger
+from config import appconf
 logger = get_logger()
+
 
 def create_remote_connection(hostname, password, username=appconf().REMOTEUSERNAME, pub_key_file=appconf().PUBKEYFILE, adminusername=appconf().USERADM):
     logger.info("create a remote admin: hostname:{0}, adminusername:{1},  pub_key_file:{2}".format(hostname, adminusername, pub_key_file))

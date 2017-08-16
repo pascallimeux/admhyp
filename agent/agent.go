@@ -4,29 +4,12 @@ import (
 	"os"
 	"time"
 	"github.com/pascallimeux/admhyp/agent/utils"
-	"github.com/pascallimeux/admhyp/agent/message"
+	"github.com/pascallimeux/admhyp/agent/mqtt"
+	"github.com/pascallimeux/admhyp/agent/log"
+	"github.com/pascallimeux/admhyp/agent/system"
+	"github.com/pascallimeux/admhyp/agent/properties"
 	"flag"
-	"github.com/op/go-logging"
-
 )
-
-var log *logging.Logger
-
-const (
-	AGENTFILENAME          = "hyp-agent"
-	REPOSITORY             = "/var/hyperledger"
-	ACCOUNTNAME            = "orangeadm"
-	SERVICENAME            = "hyp-agent.service"
-	STATUSTOPIC            = "status/"	// status/clientID
-	ORDERTOPIC             = "orders/"	// orders/clientID
-	RESPONSETOPIC          = "responses/"   // responses/clientID/messageID
-	DEFAULTLOGLEVEL        = "debug"
-	DELAYPUBSYSSTATUS      = 10 *time.Second
-	AGENTINACTIVATIONDELAY = 500 * time.Millisecond
-	DEFAULTBROKERADD       = "tcp://127.0.0.1:1883" // __BROKERADD__
-	DEFAULTAGENTNAME       = "agentX" // __AGENTNAME__
-)
-
 
 type Agent struct {
 	AgentFileName  string
@@ -35,7 +18,7 @@ type Agent struct {
 	Repository     string
 	AgentName      string
 	stopAgent      bool
-	commHandler    utils.MqttHandler
+	commHandler    mqtt.MqttHandler
 }
 
 func(a *Agent) Init(publicKey string) error{
@@ -63,6 +46,7 @@ func(a *Agent) Init(publicKey string) error{
 
 func(a *Agent) Start() error{
 	log.Info("Agent starting...")
+	time.Sleep(2) // Required when the agent is starting at the system startup
 	a.stopAgent = false
 
 	err := a.commHandler.InitCommunication(a.processingOrders)
@@ -70,15 +54,15 @@ func(a *Agent) Start() error{
 		return err
 	}
 
-	err = a.commHandler.SubscribeTopic(ORDERTOPIC+a.AgentName)
+	err = a.commHandler.SubscribeTopic(properties.ORDERTOPIC+a.AgentName)
 	if (err != nil){
 		return err
 	}
 
-	a.commHandler.SchedulePub(a.sendSystemStatus, DELAYPUBSYSSTATUS)
+	a.commHandler.SchedulePub(a.sendSystemStatus, properties.DELAYPUBSYSSTATUS)
 
 	for !a.stopAgent {
-		time.Sleep(AGENTINACTIVATIONDELAY)
+		time.Sleep(properties.AGENTINACTIVATIONDELAY)
 	}
 
 	err = a.commHandler.StopCommunication()
@@ -90,18 +74,15 @@ func(a *Agent) Start() error{
 }
 
 func(a *Agent) sendSystemStatus(){
-	systemStatus := "OK for the moment"
-	message := &message.Message{Id:utils.GenerateID(16), Body:systemStatus}
-	json_mess, err := message.ToJsonStr()
-	if (err == nil){
-		a.commHandler.PublishTopic(STATUSTOPIC+a.AgentName, string(json_mess))
-	}
+	message := system.GetSystemStatus()
+	json_mess := message.ToJsonStr()
+	a.commHandler.PublishTopic(properties.STATUSTOPIC+a.AgentName, string(json_mess))
 }
 
 func (a *Agent) processingOrders(topic string, bMessage []byte) {
-	response := message.ProcessingOrders(topic, bMessage)
-	json_resp, _ := response.ToJsonStr()
-	a.commHandler.PublishTopic(RESPONSETOPIC + a.AgentName + "/" + response.Id, json_resp)
+	response := mqtt.ProcessingOrders(topic, bMessage)
+	json_resp := response.ToJsonStr()
+	a.commHandler.PublishTopic(properties.RESPONSETOPIC + a.AgentName + "/" + response.Id, json_resp)
 	if (response.Body == "Agent stopped..."){
 		a.stopAgent = true
 	}
@@ -110,7 +91,8 @@ func (a *Agent) processingOrders(topic string, bMessage []byte) {
 func (a *Agent) persistAgent(serviceName string) error{
 	serviceContent := "[Unit]\n"
 	serviceContent = serviceContent + "Description=agent for hyperledger supervision\n"
-	serviceContent = serviceContent + "After=tlp-init.service\n\n"
+	serviceContent = serviceContent + "After=network.target\n"
+	serviceContent = serviceContent + "Requires=network.target\n"
 	serviceContent = serviceContent + "[Service]\n"
 	serviceContent = serviceContent + "User="+a.AccountName+"\n"
 	serviceContent = serviceContent + "ExecStart="+a.Repository+"/"+a.AgentFileName+"\n\n"
@@ -121,20 +103,14 @@ func (a *Agent) persistAgent(serviceName string) error{
 		log.Error(err)
 		return err
 	}
-	cmd1 := "sudo chmod a+x /lib/systemd/system/"+serviceName
-	cmd2 := "sudo systemctl enable "+serviceName
-	cmd3 := "sudo systemctl start "+serviceName
+	cmd1 := "sudo systemctl enable "+serviceName
+	cmd2 := "sudo systemctl start "+serviceName
 	_, err = utils.ExecCmd(cmd1)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
 	_, err = utils.ExecCmd(cmd2)
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-	_, err = utils.ExecCmd(cmd3)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -211,17 +187,17 @@ func (a *Agent) startNewAgent(accountName, path string) error {
 
 
 func main() {
-	var brokerAdd = flag.String("broker", DEFAULTBROKERADD, "broker address" )
-	var logLevel = flag.String("loglevel", DEFAULTLOGLEVEL, "level for log")
-	var agentName = flag.String("name", DEFAULTAGENTNAME, "name of the agent")
+	var brokerAdd = flag.String("broker", properties.DEFAULTBROKERADD, "broker address" )
+	var logLevel = flag.String("loglevel", properties.DEFAULTLOGLEVEL, "level for log")
+	var agentName = flag.String("name", properties.DEFAULTAGENTNAME, "name of the agent")
 	var publicKey = flag.String("pubkey", "None", "admin ssh public key" )
 	var init = flag.Bool("init", false, "initialize agent" )
 	flag.Parse()
-	log = utils.InitLog("agent", *logLevel)
-	log.Info("Init Agent: {broker:"+*brokerAdd+", agentName:"+ *agentName+", AccountName:"+ACCOUNTNAME+ " ,ServiceName:"+SERVICENAME+" ,Repository:"+REPOSITORY+"}")
+	log.InitLog("agent", *logLevel)
+	log.Info("Run Agent: {broker:"+*brokerAdd+", agentName:"+ *agentName+", AccountName:"+properties.ACCOUNTNAME+ " ,ServiceName:"+properties.SERVICENAME+" ,Repository:"+properties.REPOSITORY+"}")
 
-	mqttHandler := utils.MqttHandler{ClientID:*agentName, BrokerAddress:*brokerAdd}
-	agent := Agent{commHandler:mqttHandler, AccountName:ACCOUNTNAME, AgentFileName:AGENTFILENAME, ServiceName:SERVICENAME, Repository:REPOSITORY, AgentName:*agentName}
+	mqttHandler := mqtt.MqttHandler{ClientID:*agentName, BrokerAddress:*brokerAdd}
+	agent := Agent{commHandler:mqttHandler, AccountName:properties.ACCOUNTNAME, AgentFileName:properties.AGENTFILENAME, ServiceName:properties.SERVICENAME, Repository:properties.REPOSITORY, AgentName:*agentName}
 	if *init {
 		agent.Init(*publicKey)
 	}else {

@@ -13,7 +13,7 @@ Created on 22 june 2017
 import argparse
 parser = argparse.ArgumentParser(description='description')
 parser.add_argument('-p', '--port', type=int, help='port to expose API', required=False)
-from config import appconf
+from config import appconf, ROOT_DIR
 from app.common.lcmds import get_local_ipaddress
 from app import app
 

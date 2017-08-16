@@ -12,7 +12,8 @@ import (
 	"syscall"
 	"strconv"
 	"path/filepath"
-	"math/rand"
+	"github.com/pascallimeux/admhyp/agent/log"
+
 )
 
 func ExecDetachCmd(username, cmd string) error {
@@ -66,8 +67,8 @@ func ExecCmd(cmd string) ([]byte, error){
 	parts = parts[1:len(parts)]
 	out, err := exec.Command(head, parts...).CombinedOutput()
 	if err != nil {
-		log.Error(err.Error())
-		log.Error(string(out))
+		log.Error(err)
+		log.Error(errors.New(string(out)))
 		return nil, errors.New(string(out))
 	}
 	return out, err
@@ -266,13 +267,4 @@ func MoveFile(source, destination string) error {
 		return err
 	}
 	return nil
-}
-
-func GenerateID(n int) string{
-	var letters = []rune("0123345678ABCDEF")
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-    return string(b)
 }

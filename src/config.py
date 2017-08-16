@@ -43,6 +43,8 @@ class BaseConfig(object):
     PUBKEYFILE = os.getenv('HOME') + '/.ssh/id_rsa.pub'
     USERADM = "orangeadm"
     REMOTEUSERNAME = "pascal"
+    BROKERADDRESS = "tcp://192.168.0.101:1883"
+
     # sqlite3 BDD file
     SQLALCHEMY_DATABASE_URI = "sqlite:///{0}/db/admhyp.db".format(ROOT_DIR)
 

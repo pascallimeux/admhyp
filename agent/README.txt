@@ -5,11 +5,8 @@ go get github.com/op/go-logging
 
 
 
-fix bug
-ajouter dans le makefile l'installation de mosquitto et mosquitto client
 faire un sequenseur pour les orders (generique)
 transferer des fichiers avec mqtt cf voit c&c commands (modifier le format du message pour etre generiques nb args)
-developper le getsystemstatus
 
 
 

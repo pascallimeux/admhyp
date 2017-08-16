@@ -1,10 +1,12 @@
-package utils
+package mqtt
 
 import ("container/list"
+	"github.com/pascallimeux/admhyp/agent/log"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"time"
 	"strconv"
 )
+
 
 type MqttHandler struct {
 	BrokerAddress  string
@@ -71,7 +73,7 @@ func (m *MqttHandler) PublishTopic(topicName, content string){
 }
 
 func (m *MqttHandler) SchedulePub(fct func(), delay time.Duration){
-	stopPub := Schedule(fct, delay)
+	stopPub := schedule(fct, delay)
 	m.schedulesPubs.PushFront(stopPub)
 }
 
@@ -80,4 +82,20 @@ func (m *MqttHandler) stopSchedulePubs() {
 	for e := m.schedulesPubs.Front(); e != nil; e = e.Next() {
 		e.Value.(chan bool) <- true
 	}
+}
+
+func schedule(fct func(), delay time.Duration) chan bool {
+    stop := make(chan bool)
+    go func() {
+        for {
+            fct()
+            select {
+            case <-time.After(delay):
+            case <-stop:
+            log.Debug("Scheduler stopped...")
+                return
+            }
+        }
+    }()
+    return stop
 }

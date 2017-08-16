@@ -1,4 +1,4 @@
-package utils
+package log
 import (
 	"github.com/op/go-logging"
 	"os"
@@ -11,15 +11,25 @@ var format = logging.MustStringFormatter(
 
 var log *logging.Logger
 
-func InitLog(module, level string) *logging.Logger{
+func Info(content string){
+	log.Info(content)
+}
+
+func Debug(content string){
+	log.Debug(content)
+}
+
+func Error(content error){
+	log.Error(content)
+}
+
+func InitLog(module, level string) {
 	logLevel := logging.ERROR
 	switch strings.ToUpper(level) {
 	case "DEBUG":
 		logLevel = logging.DEBUG
 	case "INFO":
 		logLevel = logging.INFO
-	case "CRITICAL":
-		logLevel = logging.CRITICAL
 	case "WARNING":
 		logLevel = logging.WARNING
 	}
@@ -29,9 +39,4 @@ func InitLog(module, level string) *logging.Logger{
 	backendLeveled := logging.AddModuleLevel(backendFormatter)
 	backendLeveled.SetLevel(logLevel, "")
 	logging.SetBackend(backendLeveled)
-	return log
-}
-
-func GetLogger() *logging.Logger{
-	return log
 }
