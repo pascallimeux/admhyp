@@ -9,7 +9,7 @@ const (
 	SERVICENAME            = "hyp-agent.service"
 	STATUSTOPIC            = "status/"	// status/clientID
 	ORDERTOPIC             = "orders/"	// orders/clientID
-	RESPONSETOPIC          = "responses/"   // responses/clientID/messageID
+	RESPONSETOPIC          = "responses/"   // responses/messageID
 	DEFAULTLOGLEVEL        = "debug"
 	DELAYPUBSYSSTATUS      = 10 *time.Second
 	AGENTINACTIVATIONDELAY = 500 * time.Millisecond

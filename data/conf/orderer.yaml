@@ -65,7 +65,7 @@ General:
     # LocalMSPID is the identity to register the local MSP material with the MSP
     # manager. IMPORTANT: Deployers need to change the value of the localMspId
     # string. In particular, the name of the local MSP ID of an orderer needs to
-    # match the name of one of the MSPs in the ordering system channel.
+    # match the name of one of the MSPs in the ordering command channel.
     LocalMSPID: DEFAULT
 
     # Enable an HTTP service for Go "pprof" profiling as documented at:

@@ -3,12 +3,11 @@ package main
 import (
 	"os"
 	"time"
-	"github.com/pascallimeux/admhyp/agent/utils"
 	"github.com/pascallimeux/admhyp/agent/mqtt"
-	"github.com/pascallimeux/admhyp/agent/log"
-	"github.com/pascallimeux/admhyp/agent/system"
+	"github.com/pascallimeux/admhyp/agent/syscommand"
 	"github.com/pascallimeux/admhyp/agent/properties"
 	"flag"
+	"github.com/pascallimeux/admhyp/agent/logger"
 )
 
 type Agent struct {
@@ -22,7 +21,7 @@ type Agent struct {
 }
 
 func(a *Agent) Init(publicKey string) error{
-	log.Info("Agent initialization...")
+	logger.Log.Info("Agent initialization...")
 	err := a.createUser(a.AccountName, publicKey)
 	if err != nil {
 		return err
@@ -45,8 +44,8 @@ func(a *Agent) Init(publicKey string) error{
 
 
 func(a *Agent) Start() error{
-	log.Info("Agent starting...")
-	time.Sleep(2) // Required when the agent is starting at the system startup
+	logger.Log.Info("Agent starting...")
+	time.Sleep(5) // Required when the agent is starting at the system startup
 	a.stopAgent = false
 
 	err := a.commHandler.InitCommunication(a.processingOrders)
@@ -69,20 +68,20 @@ func(a *Agent) Start() error{
 	if (err != nil){
 		return err
 	}
-	log.Info("Agent stopped...")
+	logger.Log.Info("Agent stopped...")
 	return nil
 }
 
 func(a *Agent) sendSystemStatus(){
-	message := system.GetSystemStatus()
+	message := mqtt.GenerateSysInfoMessage(a.AgentName)
 	json_mess := message.ToJsonStr()
 	a.commHandler.PublishTopic(properties.STATUSTOPIC+a.AgentName, string(json_mess))
 }
 
 func (a *Agent) processingOrders(topic string, bMessage []byte) {
-	response := mqtt.ProcessingOrders(topic, bMessage)
+	response := mqtt.ProcessingOrders(topic, a.AgentName, bMessage)
 	json_resp := response.ToJsonStr()
-	a.commHandler.PublishTopic(properties.RESPONSETOPIC + a.AgentName + "/" + response.Id, json_resp)
+	a.commHandler.PublishTopic(properties.RESPONSETOPIC + response.MessageId, json_resp)
 	if (response.Body == "Agent stopped..."){
 		a.stopAgent = true
 	}
@@ -98,42 +97,42 @@ func (a *Agent) persistAgent(serviceName string) error{
 	serviceContent = serviceContent + "ExecStart="+a.Repository+"/"+a.AgentFileName+"\n\n"
 	serviceContent = serviceContent + "[Install]\n"
 	serviceContent = serviceContent + "WantedBy=multi-user.target\n"
-	_, err := utils.CreateFile("/lib/systemd/system/"+a.ServiceName, serviceContent)
+	_, err := syscommand.CreateFile("/lib/systemd/system/"+a.ServiceName, serviceContent)
 	if err != nil {
-		log.Error(err)
+		logger.Log.Error(err)
 		return err
 	}
 	cmd1 := "sudo systemctl enable "+serviceName
 	cmd2 := "sudo systemctl start "+serviceName
-	_, err = utils.ExecCmd(cmd1)
+	_, err = syscommand.ExecCmd(cmd1)
 	if err != nil {
-		log.Error(err)
+		logger.Log.Error(err)
 		return err
 	}
-	_, err = utils.ExecCmd(cmd2)
+	_, err = syscommand.ExecCmd(cmd2)
 	if err != nil {
-		log.Error(err)
+		logger.Log.Error(err)
 		return err
 	}
 	return nil
 }
 
 func (a *Agent) createAgentEnv(repo string) error{
-	_, err := utils.CreateDirectory(repo)
+	_, err := syscommand.CreateDirectory(repo)
 	return err
 }
 
 func (a *Agent) createUser(username, publicKey string) error{
-	_, err := utils.CreateAccount(username)
+	_, err := syscommand.CreateAccount(username)
 	if (err != nil){
 		return err
 	}
-	err = utils.AddSudo(username)
+	err = syscommand.AddSudo(username)
 	if (err != nil){
 		return err
 	}
 	if publicKey != "None" {
-		err = utils.AuthorizedKey(username, publicKey)
+		err = syscommand.AuthorizedKey(username, publicKey)
 		if (err != nil){
 			return err
 		}
@@ -142,32 +141,32 @@ func (a *Agent) createUser(username, publicKey string) error{
 }
 
 func (a *Agent) moveAgent(accountName, newpath, agentName string) error{
-	agentPath, err := utils.GetProgrammFullName()
+	agentPath, err := syscommand.GetProgrammFullName()
 	agentPath = agentPath+"/"+agentName
 	if err != nil {
-		log.Error(err)
+		logger.Log.Error(err)
 		return err
 	}
 	if (newpath == agentPath){
-		log.Info("agent is already at the good place: " + agentPath)
+		logger.Log.Info("agent is already at the good place: " + agentPath)
 		return nil
 	}
-	log.Info("Move agent from: " + agentPath + " to " + newpath)
-	err = utils.MoveFile(agentPath, newpath)
+	logger.Log.Info("Move agent from: " + agentPath + " to " + newpath)
+	err = syscommand.MoveFile(agentPath, newpath)
 	if err != nil {
-		log.Error(err)
+		logger.Log.Error(err)
 		return err
 	}
 	cmd0 := "sudo chown "+accountName+"."+accountName+" "+newpath
-	_, err = utils.ExecCmd(cmd0)
+	_, err = syscommand.ExecCmd(cmd0)
 	if err != nil {
-		log.Error(err)
+		logger.Log.Error(err)
 		return err
 	}
 	cmd1 := "sudo chmod 100 "+newpath
-	_, err = utils.ExecCmd(cmd1)
+	_, err = syscommand.ExecCmd(cmd1)
 	if err != nil {
-		log.Error(err)
+		logger.Log.Error(err)
 		return err
 	}
 	//return a.startNewAgent(accountName, newpath)
@@ -175,10 +174,10 @@ func (a *Agent) moveAgent(accountName, newpath, agentName string) error{
 }
 
 func (a *Agent) startNewAgent(accountName, path string) error {
-	log.Debug("startAgent(path:"+path+") : calling method -")
-	err := utils.ExecDetachCmd(accountName, path)
+	logger.Log.Debug("startAgent(path:"+path+") : calling method -")
+	err := syscommand.ExecDetachCmd(accountName, path)
 	if err != nil {
-		log.Error(err)
+		logger.Log.Error(err)
 		return err
 	}
 	os.Exit(0)
@@ -193,8 +192,8 @@ func main() {
 	var publicKey = flag.String("pubkey", "None", "admin ssh public key" )
 	var init = flag.Bool("init", false, "initialize agent" )
 	flag.Parse()
-	log.InitLog("agent", *logLevel)
-	log.Info("Run Agent: {broker:"+*brokerAdd+", agentName:"+ *agentName+", AccountName:"+properties.ACCOUNTNAME+ " ,ServiceName:"+properties.SERVICENAME+" ,Repository:"+properties.REPOSITORY+"}")
+	logger.InitLog("agent", *logLevel)
+	logger.Log.Info("Run Agent: {broker:"+*brokerAdd+", agentName:"+ *agentName+", AccountName:"+properties.ACCOUNTNAME+ " ,ServiceName:"+properties.SERVICENAME+" ,Repository:"+properties.REPOSITORY+"}")
 
 	mqttHandler := mqtt.MqttHandler{ClientID:*agentName, BrokerAddress:*brokerAdd}
 	agent := Agent{commHandler:mqttHandler, AccountName:properties.ACCOUNTNAME, AgentFileName:properties.AGENTFILENAME, ServiceName:properties.SERVICENAME, Repository:properties.REPOSITORY, AgentName:*agentName}

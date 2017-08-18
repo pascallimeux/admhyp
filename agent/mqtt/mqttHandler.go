@@ -1,10 +1,10 @@
 package mqtt
 
 import ("container/list"
-	"github.com/pascallimeux/admhyp/agent/log"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"time"
 	"strconv"
+	"github.com/pascallimeux/admhyp/agent/logger"
 )
 
 
@@ -23,12 +23,12 @@ func (m *MqttHandler) StopCommunication() error{
 		return err
 	}
 	m.MqttClient.Disconnect(250)
-	log.Debug("Communication handler stopped...")
+	logger.Log.Debug("Communication handler stopped...")
 	return nil
 }
 
 func (m *MqttHandler) InitCommunication(fct func(string, []byte))error {
-	log.Debug("Init communication for "+m.ClientID)
+	logger.Log.Debug("Init communication for "+m.ClientID)
 	var messageHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
 		fct(msg.Topic(), msg.Payload())
 	}
@@ -37,7 +37,7 @@ func (m *MqttHandler) InitCommunication(fct func(string, []byte))error {
 	opts.SetDefaultPublishHandler(messageHandler)
 	m.MqttClient = MQTT.NewClient(opts)
 	if token := m.MqttClient.Connect(); token.Wait() && token.Error() != nil {
-		log.Error(token.Error())
+		logger.Log.Error(token.Error())
 		return (token.Error())
 	}
 	m.topics = list.New()
@@ -46,10 +46,10 @@ func (m *MqttHandler) InitCommunication(fct func(string, []byte))error {
 }
 
 func (m *MqttHandler) SubscribeTopic(topicName string) error{
-	log.Debug("subscribe topic:  "+topicName)
+	logger.Log.Debug("subscribe topic:  "+topicName)
 	m.topics.PushFront(topicName)
 	if token := m.MqttClient.Subscribe(topicName, 0, nil); token.Wait() && token.Error() != nil {
-		log.Error(token.Error())
+		logger.Log.Error(token.Error())
 		return token.Error()
 	}
 	return nil
@@ -58,16 +58,16 @@ func (m *MqttHandler) SubscribeTopic(topicName string) error{
 func (m *MqttHandler) unSubscribeTopics() error {
 	for e := m.topics.Front(); e != nil; e = e.Next() {
 		if token := m.MqttClient.Unsubscribe(e.Value.(string)); token.Wait() && token.Error() != nil {
-			log.Error(token.Error())
+			logger.Log.Error(token.Error())
 			return token.Error()
 		}
-		log.Debug("unsubscribe topic:  "+string(e.Value.(string)))
+		logger.Log.Debug("unsubscribe topic:  "+string(e.Value.(string)))
 	}
 	return nil
 }
 
 func (m *MqttHandler) PublishTopic(topicName, content string){
-	log.Debug("publish on topic: "+topicName)
+	logger.Log.Debug("publish on topic: "+topicName)
 	token := m.MqttClient.Publish(topicName, 0, false, content)
 	token.Wait()
 }
@@ -78,7 +78,7 @@ func (m *MqttHandler) SchedulePub(fct func(), delay time.Duration){
 }
 
 func (m *MqttHandler) stopSchedulePubs() {
-	log.Debug(strconv.Itoa(m.schedulesPubs.Len())+" schedule(s) publish topic(s) stopped...")
+	logger.Log.Debug(strconv.Itoa(m.schedulesPubs.Len())+" schedule(s) publish topic(s) stopped...")
 	for e := m.schedulesPubs.Front(); e != nil; e = e.Next() {
 		e.Value.(chan bool) <- true
 	}
@@ -92,7 +92,7 @@ func schedule(fct func(), delay time.Duration) chan bool {
             select {
             case <-time.After(delay):
             case <-stop:
-            log.Debug("Scheduler stopped...")
+            logger.Log.Debug("Scheduler stopped...")
                 return
             }
         }

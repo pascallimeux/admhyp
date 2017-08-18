@@ -21,29 +21,26 @@
 # This MakeFile assumes that fabric, and fabric-ca were cloned and their docker
 # images were created using the make docker command in the respective directories
 #
-# Supported Targets:
-# all : runs unit and integration tests
-# depend: installs test dependencies
-# unit-test: runs all the unit tests
-# integration-test: runs all the integration tests
-# clean: stops docker containers used for integration testing
-#
+
 
 PUBKEY="$(shell cat /home/pascal/.ssh/id_rsa.pub)"
 
-.DEFAULT_GOAL := bin
+.DEFAULT_GOAL := initenv
 .PHONY: help
 help:
-	@echo
-	@echo
-	@echo ' -------'
-	@echo '  Agent '
-	@echo ' -------'
-	@echo
-	@echo 'Usage:'
-	@echo ' make init-env        Init Go environnement.'
-	@echo
-	@echo
+	@echo ""
+	@echo ""
+	@echo ""
+	@echo "     initenv .......... Init Go environnement."
+	@echo "     build ............ Build agent."
+	@echo "     build-prod ....... Build agent for production (upx 9)."
+	@echo "     clean ............ Remove local agent deploiement and service."
+	@echo "     run .............. start local agent."
+	@echo "     kill ............. kill all agents."
+	@echo ""
+	@echo ""
+	@echo ""
+
 
 init-env:
 	@sudo apt-add-repository ppa:mosquitto-dev/mosquitto-ppa

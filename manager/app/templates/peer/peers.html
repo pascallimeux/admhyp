@@ -1,0 +1,27 @@
+{% extends "_base.html" %}
+{% block title %}Peers page{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>peers</h2>
+    <div align="right"><a href="{{ url_for('peer_app.create') }}">add a peer</a></div>
+    <TABLE BORDER="5"    WIDTH="50%"   CELLPADDING="4" CELLSPACING="3">
+       <TR>
+          <TH COLSPAN="4"><BR><H3>Peers</H3>
+          </TH>
+       </TR>
+       <TR>
+          <TH>Name</TH>
+          <TH>Hostname</TH>
+          <TH>Status  </TH>
+          <TH>Ca      </TH>
+       </TR>
+       {% if peers %}
+           {% for peer in peers %}
+              <TR ALIGN="CENTER">
+                 <TD><a href = "{{ url_for('peer_app.manage', name=peer.name) }}">{{ peer.name }}</a></TD><TD>{{ peer.hostname }}</TD><TD>{{ peer.get_status() }}</TD><TD>{{ peer.get_ca() }}</TD>
+              </TR>
+           {% endfor %}
+       {% endif %}
+    </TABLE>
+</div>
+{% endblock %}

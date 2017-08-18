@@ -1,0 +1,63 @@
+{% extends "_base.html" %}
+{% block title %}CA managment page{% endblock %}
+{% block content %}
+<div class="container">
+    {% if ca %}
+        <h2>ca name: {{ ca.name }}  {{ ca.get_status() }}</h2>
+        <div><input type="back" class="btn btn-primary"  value="Deploy" onclick="window.location='{{ url_for('ca_app.deploy', name=ca.name) }}';" /></div><br>
+        <div><input type="back" class="btn btn-primary"  value="Start" onclick="window.location='{{ url_for('ca_app.start', name=ca.name) }}';" /></div><br>
+        <div><input type="back" class="btn btn-primary"  value="Stop" onclick="window.location='{{ url_for('ca_app.stop', name=ca.name) }}';" /></div><br>
+        <div align="right"><input type="back" class="btn btn-primary"  value="Back" onclick="window.location='{{ url_for('ca_app.list') }}';" /></div>
+    {% endif %}
+</div>
+
+<div class="container">
+    {% if ca %}
+        <h2>Create hyperledger administrator</h2>
+        <form  action="{{ url_for('ca_app.create_admin', name=ca.name) }}" method="post" role="form">
+
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="Username" name="username" value="{{ config.DEFAULTADMNAME }}">
+                <br>
+                <label for="password">Remote password:</label>
+                <input type="password" class="form-control" id="Password" name="password" value="">
+            </div>
+            <button type="submit" class="btn btn-success">Register</button>
+        </form>
+    {% endif %}
+</div>
+
+<div class="container">
+    {% if ca %}
+        <h2>register a user</h2>
+        <form  action="{{ url_for('ca_app.register', name=ca.name) }}" method="post" role="form">
+
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="Username" name="username">
+                <br>
+                <label for="password">Remote password:</label>
+                <input type="password" class="form-control" id="Password" name="password" value="">
+            </div>
+            <button type="submit" class="btn btn-success">Register</button>
+        </form>
+    {% endif %}
+</div>
+<div class="container">
+    {% if ca %}
+        <h2>enroll a user</h2>
+        <form  action="{{ url_for('ca_app.enroll', name=ca.name) }}" method="post" role="form">
+
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="Username" name="username">
+                <br>
+                <label for="Rpassword">Remote password:</label>
+                <input type="password" class="form-control" id="Rpassword" name="rpassword" value="">
+            </div>
+            <button type="submit" class="btn btn-success">Enroll</button>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

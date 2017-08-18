@@ -116,6 +116,13 @@ function install_python() {
     sudo apt update && sudo apt install -y python3.6
 }
 
+function install_mosquitto() {
+    sudo apt-add-repository ppa:mosquitto-dev/mosquitto-ppa
+    sudo apt update && sudo apt install mosquitto -y
+    sudo apt install mosquitto-clients -y
+    sudo service mosquitto restart
+}
+
 function generate_keys(){
     ssh-keygen -f $HOME/.ssh/id_rsa -t rsa -N ''
     chmod 600 $HOME/.ssh/id_rsa
@@ -128,6 +135,7 @@ function generate_keys(){
 #read -p "Press any key to install go: "
 install_go
 install_python
+install_mosquitto
 generate_keys
 #read -p "Press any key to install docker and docker-compose: "
 #install_docker

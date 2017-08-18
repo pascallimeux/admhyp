@@ -33,7 +33,7 @@ createfolders: removefolders
 	@ echo "Folders created!"
 
 initdb: cleandb
-	@ PYTHONPATH=$(CWD)/src $(ENV)/bin/python -m initDB
+	@ PYTHONPATH=$(CWD)/manager $(ENV)/bin/python -m initDB
 	@ echo "Sqlite3 database initialized!"
 
 initenv: cleanenv
@@ -47,8 +47,8 @@ init: createfolders initenv initdb
 logs:
 	@ docker logs admhyp1 -f --tail=100
 
-start:
-	@ PYTHONPATH=$(CWD)/src $(ENV)/bin/python -m run -p 5000
+run:
+	@ PYTHONPATH=$(CWD)/manager $(ENV)/bin/python -m run -p 5000
 
 docker: cleanpyc createfolders initdb
 	@ if [ ! -d "keys" ]; then mkdir keys; fi
@@ -76,7 +76,7 @@ help:
 	@echo "     clean ............ Remove python virtualenv, sqlite3 DB and pyc files."
 	@echo "     cleandb .......... Remove sqlite3 DB."
 	@echo "     cleanpyc ......... Remove .pyc files."
-	@echo "     start ............ Start application."
+	@echo "     run .............. Start application."
 	@echo "     start-container .. Start the docker container of the python application."
 	@echo "     logs ............. Display logs of the docker container."
 	@echo ""

@@ -1,0 +1,22 @@
+{% extends "_base.html" %}
+{% block title %}Channel managment page{% endblock %}
+{% block content %}
+<div class="container">
+    {% if channel %}
+        <h2>channel name: {{ channel.name }}</h2>
+            <h4>Certificate authorities:</h4>
+            {% for ca in channel.cas %}
+                {{ ca.name }}<br>
+            {% endfor %}
+        <h4>Orderers:</h4>
+            {% for orderer in channel.orderers %}
+                {{ orderer.name }}<br>
+            {% endfor %}
+        <h4>Peers:</h4>
+            {% for peer in channel.peers %}
+                {{ peer.name }}<br>
+            {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}
+

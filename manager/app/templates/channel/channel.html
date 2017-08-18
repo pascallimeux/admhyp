@@ -1,0 +1,43 @@
+{% extends "_base.html" %}
+{% block content %}
+<h2>Channel page.</h2>
+
+<div class="container">
+
+        <form  action="{{ url_for('channel_app.create') }}" method="post" role="form">
+            <label for="channelname">Channel name:</label>
+            <input type="text" class="form-control" id="Channelname" name="channelname">
+            <br>
+            <h2>select certificat authority server</h2>
+            <div class="form-group">
+                <select name="ca_ids" multiple class="form-control" width="300px">
+                    {% for ca in cas %}
+                        <option value="{{ ca.name }}" SELECTED>{{ ca.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <br>
+            <h2>select orderers server</h2>
+            <div class="form-group">
+                <select name="orderer_ids" multiple class="form-control" width="300px">
+                    {% for orderer in orderers %}
+                        <option value="{{ orderer.name }}" SELECTED>{{ orderer.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <br>
+            <h2>select peers server</h2>
+            <div class="form-group">
+                <select name="peer_ids" multiple class="form-control" width="300px">
+                    {% for peer in peers %}
+                        <option value="{{ peer.name }}" SELECTED>{{ peer.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success" value="Select">Create Channel</button>
+            <input type="back" class="btn btn-primary"  value="Back" onclick="window.location='{{ url_for('channel_app.list') }}';" />
+
+        </form>
+</div>
+
+{% endblock %}

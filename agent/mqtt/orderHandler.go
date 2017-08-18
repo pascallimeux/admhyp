@@ -2,28 +2,31 @@ package mqtt
 
 import (
 	"encoding/json"
-	"github.com/pascallimeux/admhyp/agent/log"
+	"github.com/pascallimeux/admhyp/agent/logger"
 )
 
-func ProcessingOrders(topic string, bMessage []byte) Message {
-	message := Message{}
+func ProcessingOrders(topic, agentName string, bMessage []byte) *Message {
+	message := &Message{}
 	responseContent := ""
 	err := json.Unmarshal(bMessage, &message)
 	if (err != nil) {
-		log.Error(err)
-		response := Message{Id:GenerateID(16), Error:"Bad format!"}
-		return response
+		logger.Log.Error(err)
+		error := GenerateErrorMessage(agentName, "Bad message format!", "")
+		return error
 	}
-	log.Debug("TOPIC: " + topic + "\n")
-	log.Debug("MSG  : " + message.Body + "\n")
-	log.Debug("ERROR: " + message.Error + "\n")
-	if (message.Body == "stop") {
+	logger.Log.Debug("Process message: " + message.ToStr()+ " on topic: "+topic)
+	switch message.Mtype{
+	case StopType:
 		responseContent = "Agent stopped..."
-	}else{
-		// execute order
-		responseContent = "Good response..."
+	case ExecType:
+		responseContent = "Agent execute action..."
+	case UploadType:
+		responseContent = "Agent upload file..."
+
+	default:
+		return GenerateErrorMessage(agentName, "Unknown action requested!", message.MessageId)
 	}
-	response := Message{Id:message.Id, Body:responseContent}
+	response := GenerateAckMessage(agentName, message.MessageId, responseContent)
 	return response
 }
 
