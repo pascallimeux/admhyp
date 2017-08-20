@@ -4,7 +4,7 @@ Created on 30 june 2017
 @author: pascal limeux
 '''
 
-from sqlalchemy import Column, String, Date, Boolean, ForeignKey, Float
+from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from app.database import Base
 from app.common.constants import NodeStatus
@@ -46,8 +46,8 @@ class Node(Base):
     login = Column(String)
     key_file = Column(String)
     is_deployed = Column(Boolean, default=False)
-    created = Column(Date(), default=datetime.date.today())
-    info = relationship('NodeInfo', backref="node", uselist=False)
+    created = Column(DateTime(), default=datetime.datetime.utcnow)
+    info = relationship('NodeInfo', uselist=False, back_populates="node")
     __mapper_args__ = {
         'polymorphic_identity':'server',
         'polymorphic_on':type
@@ -158,18 +158,20 @@ class Node(Base):
 
 class NodeInfo(Base):
     __tablename__ = 'node_info'
-    name = Column(String, ForeignKey(Node.name), primary_key=True)
+    name = Column(String, primary_key=True)
     totalmem = Column(Float)
     freemem = Column(Float)
     usedmem = Column(Float)
     totaldisk = Column(Float)
     freedisk = Column(Float)
     useddisk = Column(Float)
-    cpusused = Column(Float)
+    cpusused = Column(String)
     is_ca_deployed = Column(Boolean, default=False)
     is_peer_deployed = Column(Boolean, default=False)
     is_orderer_deployed = Column(Boolean, default=False)
     is_ca_started = Column(Boolean, default=False)
     is_peer_started = Column(Boolean, default=False)
     is_orderer_started = Column(Boolean, default=False)
-    created = Column(Date(), default=datetime.date.today())
+    created = Column(DateTime(), default=datetime.datetime.utcnow)
+    node_name = Column(String, ForeignKey('node.name'))
+    node = relationship("Node", back_populates="info")

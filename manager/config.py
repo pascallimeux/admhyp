@@ -45,8 +45,9 @@ class BaseConfig(object):
     REMOTEUSERNAME = "pascal"
 
     """ mqtt broker info"""
-    BROKERADDRESS = "127.0.0.1"
+    BROKERIP = "127.0.0.1"
     BROKERPORT = 1883
+    BROKERADDRESS = "tcp://{0}:{1}".format(BROKERIP, BROKERPORT)
     AGENTID = "manager"
 
     # sqlite3 BDD file

@@ -62,6 +62,7 @@ func generateDate() time.Time {
 
 func GenerateAckMessage(agentName, messageID, content string) *Message {
 	ack := &Message{MessageId:messageID, AgentId: agentName, Created: generateDate(), Mtype : AckType, Body:content}
+	logger.Log.Debug("Send ack: "+ack.ToStr())
 	return ack
 }
 
@@ -70,15 +71,17 @@ func GenerateErrorMessage(agentName, errorLabel, messageID string) *Message {
 		messageID = generateID(16)
 	}
 	error := &Message{MessageId:messageID, AgentId: agentName, Created: generateDate(), Mtype : ErrorType, Error:errorLabel}
+	logger.Log.Debug("Send error: "+error.ToStr())
 	return error
 }
 
 func GenerateSysInfoMessage(agentName string) *Message {
 	info, err := syscommand.GetSystemStatus()
-	sysInfo := &Message{MessageId:generateID(16),  Mtype : SysInfoType, Created:generateDate()}
+	sysInfo := &Message{AgentId:agentName, MessageId:generateID(16),  Mtype : SysInfoType, Created:generateDate()}
 	if (err != nil){
 		return GenerateErrorMessage(agentName, err.Error(), "")
 	}
 	sysInfo.Body=info.ToJsonStr()
+	logger.Log.Debug("Send system info: "+sysInfo.ToStr())
 	return sysInfo
 }

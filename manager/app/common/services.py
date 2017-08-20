@@ -20,6 +20,12 @@ class Services():
             logger.error("{0}".format(e))
             raise e
 
+    def get_record(self, model, name):
+        obj = model.query.filter(model.name == name).first()
+        if obj == None:
+            raise ObjectNotFoundException("no {0} for name:{1}".format(model, name))
+        return obj
+
     def CreateDB(self):
         try:
             init_db()

@@ -1,10 +1,9 @@
 import paho.mqtt.client as mqtt
 from threading import Thread
-from app.agent.message.messages import build_message
 from app.common.log import get_logger
 logger = get_logger()
 
-
+log = False
 
 class MqttHandler(Thread):
 
@@ -18,40 +17,45 @@ class MqttHandler(Thread):
         self.client.on_publish = self.on_publish
         self.client.on_disconnect = self.on_disconnect
         self.client.on_message = self.on_message
-        #self.client.on_log = self.on_log
+        self.client.on_log = self.on_log
         self.client.connect(broker_add, broker_port)
         self.start()
 
     def run(self):
+        logger.info("Mqtt handler started...")
         while not self.stop:
             self.client.loop()
+        logger.info("Mqtt handler stopped...")
 
     def StopHandler(self):
         self.stop = True
 
     def on_connect(self, mqttc, obj, flags, rc):
-        logger.debug("rc: " + str(rc))
+        if log:
+            logger.debug("rc: " + str(rc))
 
     def on_publish(self, mqttc, obj, mid):
-        logger.debug("mid: " + str(mid))
+        if log:
+            logger.debug("Publish: " + str(mid))
 
     def on_subscribe(self, mqttc, obj, mid, granted_qos):
-        logger.debug("Subscribed: " + str(mid) + " " + str(granted_qos))
+        if log:
+            logger.debug("Subscribed: " + str(mid) + " " + str(granted_qos))
 
     def on_log(self, mqttc, obj, level, string):
-        logger.debug("log: {}".format(string))
+        if log:
+            logger.debug("log: {}".format(string))
 
     def on_disconnect(self, mqttc, obj, rc):
-        logger.debug("client disconnected ok")
+        if log:
+            logger.debug("mqtt handler disconnected ok")
 
-    def Publish(self, topic, message):
-        json_msg = message.to_json()
-        self.client.publish(topic=topic, payload=json_msg, qos=1)
+    def Publish(self, topic, message_dto):
+        self.client.publish(topic=topic, payload=message_dto, qos=1)
 
     def Subscribe(self, topic):
         self.client.subscribe(topic=topic)
 
     def on_message(self, mqttc, obj, msg):
         logger.debug(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
-        message = build_message(msg.topic, msg.payload)
-        self.observer.add_message(message)
+        self.observer.receive_message(msg.topic, msg.payload)

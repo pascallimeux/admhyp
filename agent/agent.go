@@ -10,6 +10,7 @@ import (
 	"github.com/pascallimeux/admhyp/agent/logger"
 )
 
+
 type Agent struct {
 	AgentFileName  string
 	AccountName    string
@@ -21,7 +22,7 @@ type Agent struct {
 }
 
 func(a *Agent) Init(publicKey string) error{
-	logger.Log.Info("Agent initialization...")
+	logger.Log.Info("Agent "+a.AgentName+" initialization...")
 	err := a.createUser(a.AccountName, publicKey)
 	if err != nil {
 		return err
@@ -44,7 +45,7 @@ func(a *Agent) Init(publicKey string) error{
 
 
 func(a *Agent) Start() error{
-	logger.Log.Info("Agent starting...")
+	logger.Log.Info("Agent "+a.AgentName+" starting...")
 	time.Sleep(5) // Required when the agent is starting at the system startup
 	a.stopAgent = false
 

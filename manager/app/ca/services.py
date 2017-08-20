@@ -4,25 +4,24 @@ Created on 30 june 2017
 @author: pascal limeux
 '''
 from app.common.services import Services, ObjectNotFoundException
+from app.agent.agentBuilder import deploy_Agent
 from app.ca.model import Ca
 from app.database import get_session
 from app.common.log import get_logger, log_function_call
 logger = get_logger()
 from app.common.constants import NodeType
-from app.common.rcmds import create_remote_connection, check_ssh_admin_connection
+from config import appconf
 
 class CaServices(Services):
 
     @log_function_call
-    def create_ca(self, name, hostname, remoteadmlogin, remotepassword, remotelogin, pub_key_file, key_file):
-        try:
-            create_remote_connection(hostname=hostname, password=remotepassword, username=remotelogin,
-                                pub_key_file=pub_key_file, adminusername=remoteadmlogin)
-           # if not check_ssh_admin_connection(hostname=hostname, remoteadminlogin=remoteadmlogin, key_file=key_file):
-           #     raise Exception()
-        except Exception as e:
-            logger.error(e)
-            raise Exception("Create remote admin failled! {}".format(e))
+    def create_ca(self, name, hostname, remotepassword, remoteadmlogin=appconf().USERADM, remotelogin=appconf().REMOTEUSERNAME, pub_key_file=appconf().PUBKEYFILE, key_file=appconf().KEYFILE, broker_address=appconf().BROKERADDRESS, deploy=True):
+        if deploy:
+            try:
+                deploy_Agent(agent_name=name, password=remotepassword, hostname=hostname, login=remotelogin, broker_address=broker_address, pub_key_file=pub_key_file)
+            except Exception as e:
+                logger.error(e)
+                raise Exception("Deploy agent failled! {}".format(e))
         try:
             ca = Ca(name=name, hostname=hostname, type=NodeType.CA, login=remoteadmlogin, key_file=key_file)
             self.SaveRecord(ca)
@@ -49,4 +48,3 @@ class CaServices(Services):
     @log_function_call
     def get_cas(self):
         return Ca.query.all()
-
