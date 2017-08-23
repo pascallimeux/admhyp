@@ -2,11 +2,11 @@ package mqtt
 
 import (
 	"encoding/json"
-	"github.com/pascallimeux/admhyp/agent/logger"
-	"math/rand"
 	"time"
-	"github.com/pascallimeux/admhyp/agent/syscommand"
 
+	"github.com/pascallimeux/admhyp/agent/syscommand"
+	"github.com/pascallimeux/admhyp/agent/logger"
+	"strconv"
 )
 
 type orderType int
@@ -28,6 +28,7 @@ const(
        	ISORDERERSTARTED                // 13
        	ISORDERERDEPLOYED		// 14
 	STOPORDERER			// 15
+	UPLOADINFOSYS			// 16
 
 )
 type MessageDto struct {
@@ -65,7 +66,7 @@ func (o OrderDto)ToStr() string{
        str := "AgentId="+o.AgentId
        str = str + " MessageId="+ o.MessageId
        str = str + " Created="+o.Created.String()
-       str = str + " Order="+o.Order
+       str = str + " Order="+string(o.Order)
        return str
 }
 
@@ -84,49 +85,49 @@ func (r ResponseDto)ToStr() string{
        str := "AgentId="+r.AgentId
        str = str + " MessageId="+ r.MessageId
        str = str + " Created="+r.Created.String()
-       str = str + " Order="+r.Order
-       str = str + " Order="+r.Response
+       str = str + " Order="+string(r.Order)
+       str = str + " Order="+strconv.FormatBool(r.Response)
        return str
 }
 
-
-func generateID(n int) string{
-	var letters = []rune("0123345678ABCDEF")
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-    return string(b)
+type SysInfoDto struct {
+	MessageId      string
+       AgentId        string
+       Created        time.Time
+       TotalMemory	float64
+       FreeMemory      	float64
+       UsedMemory      	float64
+       TotalDisk       	float64
+       FreeDisk        	float64
+       UsedDisk		float64
+       CpusUtilisation 	[]float64
+       Ca_deployed     	bool
+       Ca_started	bool
+       Orderer_deployed	bool
+       Orderer_started	bool
+       Peer_deployed	bool
+       Peer_started	bool
 }
 
-func generateDate() time.Time {
-	return time.Now()
+func (s SysInfoDto)ToStr() string{
+       str := "AgentId="+s.AgentId
+       str = str + " MessageId="+ s.MessageId
+       str = str + " Created="+s.Created.String()
+       return str
 }
 
-func GenerateAckMessage(agentName, messageID, label string) *Message {
-	content := []string{label}
-	ack := &Message{MessageId:messageID, AgentId: agentName, Created: generateDate(), Mtype : AckType, Content:content}
-	logger.Log.Debug("Send ack: "+ack.ToStr())
-	return ack
-}
-
-func GenerateErrorMessage(agentName, errorLabel, messageID string) *Message {
-	if (messageID == ""){
-		messageID = generateID(16)
-	}
-	error := &Message{MessageId:messageID, AgentId: agentName, Created: generateDate(), Mtype : ErrorType, Error:errorLabel}
-	logger.Log.Debug("Send error: "+error.ToStr())
-	return error
-}
-
-func GenerateSysInfoMessage(agentName string) *Message {
-	info, err := syscommand.GetSystemStatus()
-	sysInfo := &Message{AgentId:agentName, MessageId:generateID(16),  Mtype : SysInfoType, Created:generateDate()}
-	if (err != nil){
-		return GenerateErrorMessage(agentName, err.Error(), "")
-	}
-	content := []string{info.ToJsonStr()}
-	sysInfo.Content=content
-	logger.Log.Debug("Send system info: "+sysInfo.ToStr())
-	return sysInfo
+func (r SysInfoDto)SetInfo(info syscommand.SysInfo){
+	r.TotalMemory = info.TotalMemory
+	r.FreeMemory=info.FreeMemory
+        r.UsedMemory=info.UsedMemory
+       r.TotalDisk=info.TotalDisk
+       r.FreeDisk=info.FreeDisk
+       r.UsedDisk=info.UsedDisk
+       r.CpusUtilisation=info.CpusUtilisation
+       r.Ca_deployed=info.Ca_deployed
+       r.Ca_started=info.Ca_started
+       r.Orderer_deployed=info.Orderer_deployed
+       r.Orderer_started=info.Orderer_started
+       r.Peer_deployed=info.Peer_deployed
+       r.Peer_started=info.Peer_started
 }

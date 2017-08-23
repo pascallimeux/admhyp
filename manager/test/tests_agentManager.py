@@ -3,12 +3,12 @@ myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, myPath + '/../')
 import unittest
 from app.agent.agentManager import AgentManager
-from app.agent.message.messages import MessageType
 from app.node.model import Node
 from app.ca.services import CaServices
 from app.node.services import NodeServices
 from app.peer.services import PeerServices
 from app.orderer.services import OrdererServices
+from app.agent.message.messages import OrderType
 import base64
 
 class mqttTest(unittest.TestCase):
@@ -53,5 +53,5 @@ class mqttTest(unittest.TestCase):
     def test_4(self):
         agent_name = "127.0.0.1"
         agent_manager = AgentManager()
-        agent_manager.send_message(agent_name=agent_name, mType=MessageType.EXEC, mContent=['startca', 'toto', 'password'], filename="")
+        agent_manager.exec_remote_cmd(agent_name=agent_name, order=OrderType.STARTCA, args=['toto', 'password'])
         #agent_manager.send_message(agent_name=agent_name, mType=MessageType.EXEC, mContent=['isstarted', 'hyp-agent'], filename="")

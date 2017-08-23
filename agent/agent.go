@@ -74,9 +74,11 @@ func(a *Agent) Start() error{
 }
 
 func(a *Agent) sendSystemStatus(){
-	sysInfoDto := mqtt.GenerateSysInfoMessage(a.AgentName)
-	json_mess := mqtt.ToJsonStr(sysInfoDto)
-	a.commHandler.PublishTopic(properties.STATUSTOPIC+a.AgentName, string(json_mess))
+	sysInfoDto, err := mqtt.GenerateSysInfoMessage(a.AgentName)
+	if (err == nil) {
+		json_mess := mqtt.ToJsonStr(sysInfoDto)
+		a.commHandler.PublishTopic(properties.STATUSTOPIC + a.AgentName, string(json_mess))
+	}
 }
 
 func (a *Agent) processingOrders(topic string, bOrder []byte) {

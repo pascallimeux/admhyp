@@ -1,7 +1,7 @@
 import json, decimal
 import random, arrow
 from config import appconf
-from app.agent.message.messages import Order_dto, Response_dto, SysInfo_dto, Error, SysInfo, STATUSTOPIC, FileTransfert
+from app.agent.message.messages import Order_dto, Response_dto, SysInfo_dto
 from app.common.log import get_logger
 logger = get_logger()
 
@@ -15,7 +15,7 @@ def create_order_dto(order, args):
     date = arrow.utcnow() # same GO date ormat
     messageId = generateID()
     agentId = appconf().AGENTID
-    order_dto = Order_dto(id=messageId(), agentId=agentId, date=date, order=order, args=args)
+    order_dto = Order_dto(id=messageId, agentId=agentId, date=date, order=order, args=args)
     return order_dto
 
 

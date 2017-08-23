@@ -10,11 +10,14 @@ import (
 	//"io/ioutil"
 	"io/ioutil"
 	"strings"
+	"time"
+	"math/rand"
 )
 
 func ProcessingOrders(bOrder []byte) (*ResponseDto, bool, error) {
 	order_dto := &OrderDto{}
 	stopAgent :=false
+	logger.Log.Debug(string(bOrder))
 	err := json.Unmarshal(bOrder, &order_dto)
 	if (err != nil) {
 		logger.Log.Error(err)
@@ -27,9 +30,6 @@ func ProcessingOrders(bOrder []byte) (*ResponseDto, bool, error) {
 	case STOPAGENT:
 		StopAgent(response_dto)
 		stopAgent=true
-		properties.PEERBINARYNAME
-		properties.CABINARYNAME
-		properties.ORDERERPROCESSNAME
 
 	case DEPLOYCA:
 		DeployCa(response_dto)
@@ -76,16 +76,18 @@ func ProcessingOrders(bOrder []byte) (*ResponseDto, bool, error) {
 	case STOPORDERER:
 		StopProcess(response_dto, properties.ORDERERPROCESSNAME)
 
+	case UPLOADINFOSYS:
+
 	default:
 		UnknownMethod(response_dto, order)
 	}
-	return response_dto, stopAgent
+	return response_dto, stopAgent, nil
 }
 
 
 func UnknownMethod (response_dto *ResponseDto, order orderType){
 	response_dto.Response = false
-	response_dto.Error = "Unknown action requested "+ order
+	response_dto.Error = "Unknown action requested "+ string(order)
 }
 
 func StopAgent(response_dto *ResponseDto){
@@ -95,7 +97,8 @@ func StopAgent(response_dto *ResponseDto){
 
 func exec_local_cmd(response_dto *ResponseDto, cmd string) {
 	response, error := syscommand.ExecComplexCmd(cmd)
-	response_dto.Response = response
+	logger.Log.Debug(response)
+	response_dto.Response = true
 	response_dto.Error = error
 }
 
@@ -169,4 +172,29 @@ func Download(fileName, content string)(string, error){
 		return "",err
 	}
 	return fileName + " upload on agent", nil
+}
+
+
+func GenerateSysInfoMessage(agentName string) (*SysInfoDto, error) {
+	info, err := syscommand.GetSystemStatus()
+	sysInfoDto := &SysInfoDto{AgentId:agentName, MessageId:generateID(16), Created:generateDate()}
+	if (err != nil){
+		logger.Log.Error(err)
+	}
+	sysInfoDto.SetInfo(info)
+	logger.Log.Debug("Send system info: "+sysInfoDto.ToStr())
+	return sysInfoDto, err
+}
+
+func generateID(n int) string{
+	var letters = []rune("0123345678ABCDEF")
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+    return string(b)
+}
+
+func generateDate() time.Time {
+	return time.Now()
 }

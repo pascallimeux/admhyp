@@ -1,6 +1,6 @@
 from app.common.log import get_logger
-from app.agent.message.messages import RESPONSETOPIC, ORDERTOPIC, STATUSTOPIC, SysInfo_dto, OrderType
-from app.agent.message.messageHelper import build_sysinfo_dto, build_response_dto
+from app.agent.message.messages import RESPONSETOPIC, ORDERTOPIC, STATUSTOPIC
+from app.agent.message.messageHelper import build_sysinfo_dto, build_response_dto, create_order_dto
 from app.node.services import NodeServices
 from config import appconf
 from app.agent.mqttHandler import MqttHandler
@@ -75,17 +75,17 @@ class AgentManager(Observer):
             logger.info("Received response: {0} from {1}".format(response_dto.order ,response_dto.AgentId))
 
 
-    def upload_file(self, agent_name, source, dest):
-        file_transfert = build_filetransfert(source, dest)
-        self.send_order(agent_name=agent_name, mType=MessageType.DOWNLOAD, mContent=file_transfert.Content, filename = file_transfert.FileName)
+    #def upload_file(self, agent_name, source, dest):
+    #    file_transfert = build_filetransfert(source, dest)
+    #    self.send_order(agent_name=agent_name, mType=MessageType.DOWNLOAD, mContent=file_transfert.Content, filename = file_transfert.FileName)
 
-    def exec_remote_cmd(self, agent_name, cmd):
-        order = create_order_dto(mtype=mType, content=mContent, filename=filename)
-        message_dto = message.to_json()
-        logger.info("Send message: {0} to agent: {1} ".format(str(message_dto), agent_name))
+    def exec_remote_cmd(self, agent_name, order, args):
+        order_dto = create_order_dto(order=order, args=args)
+        order_json = order_dto.to_json()
+        logger.info("Send message: {0} to agent: {1} ".format(str(order_dto), agent_name))
         # logger.info("Send {0} message to agent: {1} ".format(mType, agent_name))
-        self.save_order(order)
-        self.comm_handler.Publish(topic=ORDERTOPIC + agent_name, message_dto=message_dto)
+        self.save_order(order_dto)
+        self.comm_handler.Publish(topic=ORDERTOPIC + agent_name, message_dto=order_json)
 
 
 
