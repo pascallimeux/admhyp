@@ -14,5 +14,11 @@ const (
 	DELAYPUBSYSSTATUS      = 10 *time.Second
 	AGENTINACTIVATIONDELAY = 500 * time.Millisecond
 	DEFAULTBROKERADD       = "tcp://127.0.0.1:1883"
-	DEFAULTAGENTNAME       = "agent5"
+	DEFAULTAGENTNAME       = "127.0.0.1"
+	PEERPROCESSNAME        = "peer"
+	CAPROCESSNAME          = "fabric-ca-server"
+	ORDERERPROCESSNAME     = "orderer"
+	PEERBINARYNAME         = "peer"
+	CABINARYNAME           = "fabric-ca-server"
+	ORDERERBINARYNAME      = "orderer"
 )

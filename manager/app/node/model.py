@@ -4,7 +4,7 @@ Created on 30 june 2017
 @author: pascal limeux
 '''
 
-from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Float
+from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Float, Integer,Table
 from sqlalchemy.orm import relationship
 from app.database import Base
 from app.common.constants import NodeStatus
@@ -13,7 +13,7 @@ import datetime
 from functools import wraps
 from app.common.ssh import Ssh
 from app.common.log import get_logger
-import abc
+import abc, uuid
 from app.common.commands import is_started, is_deployed, stop_process, uncompress_msp, remote_file_4_upload_msp
 
 
@@ -37,6 +37,10 @@ def check_started(f):
         return f(*args, **kwargs)
     return wrapper
 
+association_table_nodeinfo = Table('association_nodeinfo', Base.metadata,
+    Column('node_name', String, ForeignKey('node.name'), primary_key=True),
+    Column('nodeinfo_id', String, ForeignKey('node_info.id'), primary_key=True)
+)
 
 class Node(Base):
     __tablename__ = 'node'
@@ -47,7 +51,7 @@ class Node(Base):
     key_file = Column(String)
     is_deployed = Column(Boolean, default=False)
     created = Column(DateTime(), default=datetime.datetime.utcnow)
-    info = relationship('NodeInfo', uselist=False, back_populates="node")
+    infos = relationship("NodeInfo", secondary=association_table_nodeinfo)
     __mapper_args__ = {
         'polymorphic_identity':'server',
         'polymorphic_on':type
@@ -158,7 +162,7 @@ class Node(Base):
 
 class NodeInfo(Base):
     __tablename__ = 'node_info'
-    name = Column(String, primary_key=True)
+    id = Column(String, primary_key=True, default=lambda: uuid.uuid4().hex)
     totalmem = Column(Float)
     freemem = Column(Float)
     usedmem = Column(Float)
@@ -173,5 +177,3 @@ class NodeInfo(Base):
     is_peer_started = Column(Boolean, default=False)
     is_orderer_started = Column(Boolean, default=False)
     created = Column(DateTime(), default=datetime.datetime.utcnow)
-    node_name = Column(String, ForeignKey('node.name'))
-    node = relationship("Node", back_populates="info")

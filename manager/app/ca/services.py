@@ -5,6 +5,9 @@ Created on 30 june 2017
 '''
 from app.common.services import Services, ObjectNotFoundException
 from app.agent.agentBuilder import deploy_Agent
+from app.agent.agentManager import AgentManager
+from app.common.commands import compress_locales_files_4_ca, start_ca
+from app.common.lcmds import exec_local_cmd
 from app.ca.model import Ca
 from app.database import get_session
 from app.common.log import get_logger, log_function_call
@@ -18,7 +21,7 @@ class CaServices(Services):
     def create_ca(self, name, hostname, remotepassword, remoteadmlogin=appconf().USERADM, remotelogin=appconf().REMOTEUSERNAME, pub_key_file=appconf().PUBKEYFILE, key_file=appconf().KEYFILE, broker_address=appconf().BROKERADDRESS, deploy=True):
         if deploy:
             try:
-                deploy_Agent(agent_name=name, password=remotepassword, hostname=hostname, login=remotelogin, broker_address=broker_address, pub_key_file=pub_key_file)
+                deploy_Agent(agent_name=hostname, password=remotepassword, hostname=hostname, login=remotelogin, broker_address=broker_address, pub_key_file=pub_key_file)
             except Exception as e:
                 logger.error(e)
                 raise Exception("Deploy agent failled! {}".format(e))
@@ -48,3 +51,17 @@ class CaServices(Services):
     @log_function_call
     def get_cas(self):
         return Ca.query.all()
+
+    @log_function_call
+    def deploy_ca(self, name):
+        ca = self.get_ca(name=name)
+        agent_manager = AgentManager()
+        #exec_local_cmd(compress_locales_files_4_ca())
+        agent_manager.upload_file(agent_name=ca.hostname, source="/tmp/files.tgz", dest="/tmp/var/hyperledger/files.tgz")
+
+    @log_function_call
+    def start_ca(self, name):
+        ca = self.get_ca(name=name)
+        agent_manager = AgentManager()
+        agent_manager.exec_remote_cmd(agent_name=ca.hostname, cmd=start_ca())
+

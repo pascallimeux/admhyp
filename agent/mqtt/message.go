@@ -9,43 +9,86 @@ import (
 
 )
 
-type mtype int
+type orderType int
 
 const(
-	SysInfoType	mtype = iota	// 0
-	StopType			// 1
-	ExecType			// 2
-	UploadType			// 3
-	AckType				// 4
-	ErrorType			// 5
-	ContentType			// 6
+       	STOPAGENT      orderType = iota // 0
+       	DEPLOYCA			// 1
+       	STARTCA                         // 2
+      	ISCASTARTED                     // 3
+       	ISCADEPLOYED			// 4
+	STOPCA				// 5
+	DEPLOYPEER                      // 6
+       	STARTPEER                       // 7
+       	ISPEERSTARTED                   // 8
+       	ISPEERDEPLOYED			// 9
+	STOPPEER			// 10
+	DEPLOYORDERER                   // 11
+       	STARTORDERER                    // 12
+       	ISORDERERSTARTED                // 13
+       	ISORDERERDEPLOYED		// 14
+	STOPORDERER			// 15
+
 )
-
-
-type Message struct {
-	MessageId 	string
-        AgentId 	string
-        Created		time.Time
-	Mtype           mtype
-	Error	        string
-	Body            string
-	Tgz             []byte
+type MessageDto struct {
+	MessageId      string
+        AgentId        string
+        Created        time.Time
 }
 
-func (m Message)ToJsonStr() string{
-	json_mess, err := json.Marshal(m)
-    	if err != nil {
-		logger.Log.Error(err)
-		return ""
-    	}
-	return string(json_mess)
+func ToJsonStr(obj interface{}) string{
+       json_mess, err := json.Marshal(obj)
+       if err != nil {
+              logger.Log.Error(err)
+              return ""
+       }
+       return string(json_mess)
 }
-func (m Message)ToStr() string{
-	str := "AgentId="+m.AgentId
-	str = str + " MessageId="+ m.MessageId
-	str = str + " Created="+m.Created.String()
-	return str
+
+func (m MessageDto)ToStr() string{
+       str := "AgentId="+m.AgentId
+       str = str + " MessageId="+ m.MessageId
+       str = str + " Created="+m.Created.String()
+       return str
 }
+
+
+type OrderDto struct {
+       MessageId      string
+       AgentId        string
+       Created        time.Time
+       Order          orderType
+       Args           []string
+}
+
+func (o OrderDto)ToStr() string{
+       str := "AgentId="+o.AgentId
+       str = str + " MessageId="+ o.MessageId
+       str = str + " Created="+o.Created.String()
+       str = str + " Order="+o.Order
+       return str
+}
+
+type ResponseDto struct {
+       MessageId      string
+       AgentId        string
+       Created        time.Time
+       Order          orderType
+       Error          string
+       Response       bool
+       Content        []string
+}
+
+
+func (r ResponseDto)ToStr() string{
+       str := "AgentId="+r.AgentId
+       str = str + " MessageId="+ r.MessageId
+       str = str + " Created="+r.Created.String()
+       str = str + " Order="+r.Order
+       str = str + " Order="+r.Response
+       return str
+}
+
 
 func generateID(n int) string{
 	var letters = []rune("0123345678ABCDEF")
@@ -60,8 +103,9 @@ func generateDate() time.Time {
 	return time.Now()
 }
 
-func GenerateAckMessage(agentName, messageID, content string) *Message {
-	ack := &Message{MessageId:messageID, AgentId: agentName, Created: generateDate(), Mtype : AckType, Body:content}
+func GenerateAckMessage(agentName, messageID, label string) *Message {
+	content := []string{label}
+	ack := &Message{MessageId:messageID, AgentId: agentName, Created: generateDate(), Mtype : AckType, Content:content}
 	logger.Log.Debug("Send ack: "+ack.ToStr())
 	return ack
 }
@@ -81,7 +125,8 @@ func GenerateSysInfoMessage(agentName string) *Message {
 	if (err != nil){
 		return GenerateErrorMessage(agentName, err.Error(), "")
 	}
-	sysInfo.Body=info.ToJsonStr()
+	content := []string{info.ToJsonStr()}
+	sysInfo.Content=content
 	logger.Log.Debug("Send system info: "+sysInfo.ToStr())
 	return sysInfo
 }

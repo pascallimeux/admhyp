@@ -20,7 +20,7 @@ class OrdererServices(Services):
                   broker_address=appconf().BROKERADDRESS, deploy=True):
         if deploy:
             try:
-                deploy_Agent(agent_name=name, password=remotepassword, hostname=hostname, login=remotelogin,
+                deploy_Agent(agent_name=hostname, password=remotepassword, hostname=hostname, login=remotelogin,
                              broker_address=broker_address, pub_key_file=pub_key_file)
             except Exception as e:
                 logger.error(e)

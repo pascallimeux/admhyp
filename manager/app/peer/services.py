@@ -16,12 +16,12 @@ from config import appconf
 
 class PeerServices(Services):
     @log_function_call
-    def create_ca(self, name, hostname, remotepassword, remoteadmlogin=appconf().USERADM,
+    def create_peer(self, name, hostname, remotepassword, remoteadmlogin=appconf().USERADM,
                   remotelogin=appconf().REMOTEUSERNAME, pub_key_file=appconf().PUBKEYFILE, key_file=appconf().KEYFILE,
                   broker_address=appconf().BROKERADDRESS, deploy=True):
         if deploy:
             try:
-                deploy_Agent(agent_name=name, password=remotepassword, hostname=hostname, login=remotelogin,
+                deploy_Agent(agent_name=hostname, password=remotepassword, hostname=hostname, login=remotelogin,
                              broker_address=broker_address, pub_key_file=pub_key_file)
             except Exception as e:
                 logger.error(e)

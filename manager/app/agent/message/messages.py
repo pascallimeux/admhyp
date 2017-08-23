@@ -5,46 +5,82 @@ logger = get_logger()
 class CreateMessageException(Exception):
     pass
 
-class MessageType(Enum):
-    SYSINFO  = 0
-    STOP     = 1
-    EXEC     = 2
-    UPLOAD   = 3
-    ACK      = 4
-    ERROR    = 5
-    CONTENT  = 6
+class OrderType(Enum):
+    STOPAGENT         = 0
+    DEPLOYCA          = 1
+    STARTCA           = 2
+    ISCASTART         = 3
+    ISCADEPLOYED      = 4
+    STOPCA            = 5
+    DEPLOYPEER        = 6
+    STARTPEER         = 7
+    ISPEERSTARTED     = 8
+    ISPEERDEPLOYED    = 9
+    STOPPEER          = 10
+    DEPLOYORDERER     = 11
+    STARTORDERER      = 12
+    ISORDERERSTARTED  = 13
+    ISORDERERDEPLOYED = 14
+    STOPORDERER       = 15
 
-STATUSTOPIC   = "status/"         # status / clientID
-ORDERTOPIC    = "orders/"         # orders / clientID
-RESPONSETOPIC = "responses/"      # responses / messageID
+STATUSTOPIC   = "status/"         # status / clientID           Agent   ---> SysInfo_dto    --->    Manager
+ORDERTOPIC    = "orders/"         # orders / clientID           Manager ---> Order_dto      --->    Agent
+RESPONSETOPIC = "responses/"      # responses / messageID       Agent   ---> Response_dto   --->    Manager
 
-class Message ():
-    def __init__(self, id, agentId, date, mType, body="", error=""):
-        self.MessageId = id
-        self.AgentId = agentId
-        self.Created = date
-        self.Mtype   = mType
-        self.Body    = body
-        self.Error   = error
+class Message_dto ():
+    def __init__(self, id, agentId, date):
+        self.messageId = id
+        self.agentId = agentId
+        self.created = date
 
     def to_str(self):
-        return "MessageId={0}, AgentId={1}, Created={2} Type={3}".format(self.MessageId, self.AgentId, self.Created, self.Mtype.name)
+        return "MessageId={0}, AgentId={1}, Created={2} ".format(self.messageId, self.agentId, self.created)
 
     def to_json(self):
         dict = {}
-        dict['MessageId']=self.MessageId
-        dict['AgentId']=self.AgentId
-        dict['Created']=str(self.Created)
-        dict['Mtype']=self.Mtype.value
-        dict['Body']=self.Body
-        dict['Error']=self.Error
+        dict['MessageId']=self.messageId
+        dict['AgentId']=self.agentId
+        dict['Created']=str(self.created)
+        return str(dict).replace("'", "\"")
+
+class Order_dto(Message_dto):
+    def __init__(self, id, agentId, date, order, args):
+        super().__init__(id, agentId, date)
+        self.order=order
+        self.args=args
+
+    def to_str(self):
+        str = super().to_str()
+        str = str + " order:{0}".format(self.order)
+        return str
+
+    def to_json(self):
+        dict = {}
+        dict['MessageId']=self.messageId
+        dict['AgentId']=self.agentId
+        dict['Created']=str(self.created)
+        dict['Order']=self.order
+        dict['Args']=str(self.args)
         return str(dict).replace("'", "\"")
 
 
-class SysInfo(Message):
+class Response_dto(Message_dto):
+    def __init__(self, id, agentId, date, order, error, response, content):
+        super().__init__(id, agentId, date)
+        self.order=order
+        self.error=error
+        self.response=response
+        self.content=content
+
+    def to_str(self):
+        str = super().to_str()
+        str = str + " order:{0} ,response:{1}".format(self.order, self.response)
+        return str
+
+
+class SysInfo_dto(Message_dto):
     def __init__(self, id, agentId, date):
-        mType = MessageType.SYSINFO
-        super().__init__(id, agentId, date, mType)
+        super().__init__(id, agentId, date)
 
     def set_memory_info(self, total, free, used):
         self.total_memory = total
@@ -84,34 +120,3 @@ class SysInfo(Message):
                                           self.is_ca_deployed, self.is_ca_started,
                                           self.is_orderer_deployed, self.is_orderer_started)
         return str
-
-class Ack(Message):
-    def __init__(self, id, agentId, date):
-        mType = MessageType.ACK
-        super().__init__(id, agentId, date, mType)
-
-    def set_libelle(self, libelle):
-        self.libelle = libelle
-
-    def to_str(self):
-        str = super().to_str()
-        str = str + "ack:{0} ".format(self.libelle)
-        return str
-
-class Error(Message):
-    def __init__(self, id, agentId, date):
-        mType = MessageType.ERROR
-        super().__init__(id, agentId, date, mType)
-
-    def set_error_libelle(self, libelle):
-        self.libelle = libelle
-
-    def to_str(self):
-        str = super().to_str()
-        str = str + "error:{0} ".format(self.libelle)
-        return str
-
-class Content(Message):
-    def __init__(self, id, agentId, date, body, error):
-        mType = MessageType.CONTENT
-        super().__init__(id, agentId, date, mType, body, error)

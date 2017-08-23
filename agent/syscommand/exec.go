@@ -4,7 +4,6 @@ import (
 	"os/exec"
 	"syscall"
 	"github.com/pascallimeux/admhyp/agent/logger"
-	"sync"
 	"strings"
 	"strconv"
 	"os/user"
@@ -42,17 +41,16 @@ func ExecDetachCmd(username, cmd string) error {
 	return nil
 }
 
-func ExecCmd2(cmd string, wg *sync.WaitGroup) ([]byte, error){
+func ExecComplexCmd(cmd string)  (string, string){
 	logger.Log.Debug("exec local command: "+cmd)
-	parts := strings.Fields(cmd)
-	head := parts[0]
-	parts = parts[1:len(parts)]
-	out, err := exec.Command(head, parts...).CombinedOutput()
+	out, err := exec.Command("sh","-c",cmd).CombinedOutput()
 	if err != nil {
 		logger.Log.Error(err)
+		logger.Log.Error(errors.New(string(out)))
+		return "",string(out)
 	}
-	wg.Done()
-	return out, err
+	logger.Log.Debug("out= "+string(out))
+	return string(out), ""
 }
 
 func ExecCmd(cmd string) ([]byte, error){
@@ -67,4 +65,16 @@ func ExecCmd(cmd string) ([]byte, error){
 		return nil, errors.New(string(out))
 	}
 	return out, err
+}
+
+func Compress(src, dst string) error {
+	cmd := "tar czf "+src+" "+dst
+	_, err :=ExecCmd(cmd)
+	return err
+}
+
+func Uncompress(tgz, dst string) error{
+	cmd := "tar xzf "+tgz+" "+dst
+	_, err :=ExecCmd(cmd)
+	return err
 }

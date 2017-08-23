@@ -59,7 +59,7 @@ func(a *Agent) Start() error{
 		return err
 	}
 
-	a.commHandler.SchedulePub(a.sendSystemStatus, properties.DELAYPUBSYSSTATUS)
+	//a.commHandler.SchedulePub(a.sendSystemStatus, properties.DELAYPUBSYSSTATUS)
 
 	for !a.stopAgent {
 		time.Sleep(properties.AGENTINACTIVATIONDELAY)
@@ -74,17 +74,18 @@ func(a *Agent) Start() error{
 }
 
 func(a *Agent) sendSystemStatus(){
-	message := mqtt.GenerateSysInfoMessage(a.AgentName)
-	json_mess := message.ToJsonStr()
+	sysInfoDto := mqtt.GenerateSysInfoMessage(a.AgentName)
+	json_mess := mqtt.ToJsonStr(sysInfoDto)
 	a.commHandler.PublishTopic(properties.STATUSTOPIC+a.AgentName, string(json_mess))
 }
 
-func (a *Agent) processingOrders(topic string, bMessage []byte) {
-	response := mqtt.ProcessingOrders(topic, a.AgentName, bMessage)
-	json_resp := response.ToJsonStr()
-	a.commHandler.PublishTopic(properties.RESPONSETOPIC + response.MessageId, json_resp)
-	if (response.Body == "Agent stopped..."){
-		a.stopAgent = true
+func (a *Agent) processingOrders(topic string, bOrder []byte) {
+	var responseDto *mqtt.ResponseDto
+	var err error
+	responseDto, a.stopAgent, err = mqtt.ProcessingOrders(bOrder)
+	if (err == nil) {
+		json_resp := mqtt.ToJsonStr(responseDto)
+		a.commHandler.PublishTopic(properties.RESPONSETOPIC + responseDto.MessageId, json_resp)
 	}
 }
 

@@ -7,14 +7,18 @@ from app.agent.message.messages import MessageType
 from app.node.model import Node
 from app.ca.services import CaServices
 from app.node.services import NodeServices
+from app.peer.services import PeerServices
+from app.orderer.services import OrdererServices
+import base64
+
 class mqttTest(unittest.TestCase):
 
     def test_1(self):
-        agent_name = "agent"
+        agent_name = "127.0.0.1"
         caService = CaServices()
         #caService.create_ca(name=agent_name, hostname="127.0.0.1", remotepassword="pascal")
         agent_manager = AgentManager()
-        agent_manager.send_message(agent_name=agent_name, mType=MessageType.EXEC, mBody="Hello Agent....")
+        agent_manager.send_message(agent_name=agent_name, mType=MessageType.EXEC, mContent=['method', 'arg1', 'arg2', 'arg3'])
         time.sleep(20)
         agent_manager.send_message(agent_name=agent_name, mType=MessageType.STOP, mBody="Hello Agent....")
         time.sleep(5)
@@ -30,12 +34,24 @@ class mqttTest(unittest.TestCase):
         print(node)
 
     def test_3(self):
-        service=CaServices()
-        service.create_ca(name="agent1", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
-        service.create_ca(name="agent2", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
-        service.create_ca(name="agent3", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
-        service.create_ca(name="agent4", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
-        service.create_ca(name="agent5", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
-        ca1 = service.get_ca(name="agent1")
-        service.create_ca
+        caService=CaServices()
+        peerService = PeerServices()
+        ordererService = OrdererServices()
+        ordererService.create_orderer(name="orderer1", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
+        caService.create_ca(name="ca1", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
+        peerService.create_peer(name="peer1", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
 
+    def test_deploy_ca(self):
+        caService = CaServices()
+        caService.deploy_ca(name="ca1")
+
+
+    def test_start_ca(self):
+        caService = CaServices()
+        caService.start_ca(name="ca1")
+
+    def test_4(self):
+        agent_name = "127.0.0.1"
+        agent_manager = AgentManager()
+        agent_manager.send_message(agent_name=agent_name, mType=MessageType.EXEC, mContent=['startca', 'toto', 'password'], filename="")
+        #agent_manager.send_message(agent_name=agent_name, mType=MessageType.EXEC, mContent=['isstarted', 'hyp-agent'], filename="")
