@@ -26,6 +26,7 @@ def exec_local_cmd2(cmd):
 
 #example "df -k && ls -lisa"
 def exec_local_cmd(cmds):
+    logger.debug("Exec local cmd: {}".format(cmds))
     process = Popen(cmds, shell=True, stdout=PIPE, stderr=PIPE)
     output, error = process.communicate()
     output = output.decode('utf-8')

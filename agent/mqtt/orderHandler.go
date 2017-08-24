@@ -17,7 +17,6 @@ import (
 func ProcessingOrders(bOrder []byte) (*ResponseDto, bool, error) {
 	order_dto := &OrderDto{}
 	stopAgent :=false
-	logger.Log.Debug(string(bOrder))
 	err := json.Unmarshal(bOrder, &order_dto)
 	if (err != nil) {
 		logger.Log.Error(err)
@@ -27,56 +26,57 @@ func ProcessingOrders(bOrder []byte) (*ResponseDto, bool, error) {
 
 	order := order_dto.Order
 	switch order{
+	case INITENV:
+		BuildHyperledgerFolders(response_dto, order_dto.Args)
+
 	case STOPAGENT:
 		StopAgent(response_dto)
 		stopAgent=true
 
 	case DEPLOYCA:
-		DeployCa(response_dto)
+		Deploy(response_dto, order_dto.Args)
 
 	case STARTCA:
 		StartCa(response_dto, order_dto.Args)
 
 	case ISCASTARTED:
-		IsStarted(response_dto, properties.CAPROCESSNAME)
+		response_dto.Response = IsStarted(properties.CAPROCESSNAME)
 
 	case ISCADEPLOYED:
-		IsDeployed(response_dto, properties.CABINARYNAME)
+		response_dto.Response = IsDeployed(properties.CABINARYNAME)
 
 	case STOPCA:
 		StopProcess(response_dto, properties.CAPROCESSNAME)
 
 	case DEPLOYPEER:
-		DeployPeer(response_dto)
+		Deploy(response_dto, order_dto.Args)
 
 	case STARTPEER:
 		StartPeer(response_dto, order_dto.Args)
 
 	case ISPEERSTARTED:
-		IsStarted(response_dto, properties.PEERPROCESSNAME)
+		response_dto.Response = IsStarted(properties.PEERPROCESSNAME)
 
 	case ISPEERDEPLOYED:
-		IsDeployed(response_dto, properties.PEERBINARYNAME)
+		response_dto.Response  = IsDeployed(properties.PEERBINARYNAME)
 
 	case STOPPEER:
 		StopProcess(response_dto, properties.PEERPROCESSNAME)
 
 	case DEPLOYORDERER:
-		DeployOrderer(response_dto)
+		Deploy(response_dto, order_dto.Args)
 
 	case STARTORDERER:
 		StartOrderer(response_dto)
 
 	case ISORDERERSTARTED:
-		IsStarted(response_dto, properties.ORDERERPROCESSNAME)
+		response_dto.Response = IsStarted(properties.ORDERERPROCESSNAME)
 
 	case ISORDERERDEPLOYED:
-		IsDeployed(response_dto, properties.ORDERERBINARYNAME)
+		response_dto.Response = IsDeployed(properties.ORDERERBINARYNAME)
 
 	case STOPORDERER:
 		StopProcess(response_dto, properties.ORDERERPROCESSNAME)
-
-	case UPLOADINFOSYS:
 
 	default:
 		UnknownMethod(response_dto, order)
@@ -97,50 +97,75 @@ func StopAgent(response_dto *ResponseDto){
 
 func exec_local_cmd(response_dto *ResponseDto, cmd string) {
 	response, error := syscommand.ExecComplexCmd(cmd)
-	logger.Log.Debug(response)
-	response_dto.Response = true
 	response_dto.Error = error
+	if (error != "" && response != ""){
+		response_dto.Response = false
+	}else{
+		response_dto.Response = true
+	}
+}
+
+func BuildHyperledgerFolders(response_dto *ResponseDto, params []string) {
+	username := params[0]
+	group := params[0]
+	cmd := "sudo mkdir -p /var/hyperledger/.keys/admin " +
+	 "&& sudo mkdir -p /var/hyperledger/log " +
+         "&& sudo chown -R "+username+"."+group+" /var/hyperledger "  +
+         "&& sudo mkdir -p /opt/gopath/src/github.com/hyperledger " +
+         "&& sudo chown "+username+"."+group+" /opt/gopath/src/github.com/hyperledger "
+	exec_local_cmd(response_dto, cmd)
 }
 
 func StartCa(response_dto *ResponseDto, params []string) {
 	if len(params) != 2 {
 		response_dto.Error = "Bad arguments number for method StartCa(" + (strings.Join(params, ","))+")"
+	}else {
+		admin_name := params[0]
+		admin_pwd := params[1]
+		cmd := "cd " + properties.REPOSITORY + " && CMD=\"./bin/fabric-ca-server start -b " + admin_name + ":'" + admin_pwd + "' -c .keys/config.yaml > log/ca.log 2>&1 &\" && eval \"$CMD\""
+		exec_local_cmd(response_dto, cmd)
 	}
-	admin_name := params[0]
-	admin_pwd := params[1]
-	cmd := "cd /var/hyperledger && CMD=\"./bin/fabric-ca-server start -b " + admin_name + ":'" + admin_pwd + "' -c .keys/config.yaml > log/ca.log 2>&1 &\" && eval \"$CMD\""
-	exec_local_cmd(response_dto, cmd)
 }
 
 func StartPeer(response_dto *ResponseDto, params []string) {
 	if len(params) != 3 {
 		response_dto.Error = "Bad arguments number for method StartPeer(" + (strings.Join(params, ","))+")"
+	}else {
+		peerName := params[0]
+		mode := params[1]
+		peerPort := params[2]
+		cmd := "FABRIC_CFG_PATH=$PWD CORE_PEER_ID=" + peerName + " CORE_PEER_ADDRESSAUTODETECT=true CORE_PEER_ADDRESS=" + peerName + ":" + peerPort +
+			"CORE_PEER_GOSSIP_EXTERNALENDPOINT=" + peerName + ":" + peerPort + " CORE_PEER_GOSSIP_ORGLEADER=false CORE_PEER_GOSSIP_USELEADERELECTION=true " +
+			"CORE_PEER_GOSSIP_SKIPHANDSHAKE=true CORE_PEER_MSPCONFIGPATH=" + properties.REPOSITORY + "/msp CORE_PEER_LOCALMSPID=BlockChainCoCMSP CORE_LOGGING_LEVEL=" + mode +
+			" " + properties.REPOBIN + "/peer node start"
+		exec_local_cmd(response_dto, cmd)
 	}
-	peer_name := params[0]
-	mode := params[1]
-	peer_port :=params[2]
-	cmd := "FABRIC_CFG_PATH=$PWD CORE_PEER_ID=" + peer_name + " CORE_PEER_ADDRESSAUTODETECT=true CORE_PEER_ADDRESS=" + peer_name + ":" + peer_port +
-		"CORE_PEER_GOSSIP_EXTERNALENDPOINT=" + peer_name + ":" + peer_port + " CORE_PEER_GOSSIP_ORGLEADER=false CORE_PEER_GOSSIP_USELEADERELECTION=true "+
-		"CORE_PEER_GOSSIP_SKIPHANDSHAKE=true CORE_PEER_MSPCONFIGPATH=/var/hyperledger/msp CORE_PEER_LOCALMSPID=BlockChainCoCMSP CORE_LOGGING_LEVEL=" + mode +
-		" /var/hyperledger/bin/peer node start"
-	exec_local_cmd(response_dto, cmd)
 }
 
 func StartOrderer(response_dto *ResponseDto) {
-	cmd := "/var/hyperledger/bin/orderer"
+	cmd := properties.REPOBIN+"/orderer"
 	exec_local_cmd(response_dto, cmd)
 }
 
-func DeployCa(response_dto *ResponseDto){
 
-}
-
-func DeployPeer(response_dto *ResponseDto){
-
-}
-
-func DeployOrderer(response_dto *ResponseDto){
-
+func Deploy(response_dto *ResponseDto, params []string){
+	if len(params) != 2 {
+		response_dto.Error = "Bad arguments number for method Deploy(" + (strings.Join(params, ","))+")"
+	}else {
+		tgzFile := params[0]
+		encoded := params[1]
+		decoded := make([]byte, b64.StdEncoding.DecodedLen(len(encoded)))
+		if _, err := b64.StdEncoding.Decode(decoded, []byte(encoded)); err != nil {
+			response_dto.Error = err.Error()
+			return
+		}
+		if err := ioutil.WriteFile(tgzFile, decoded, 0644); err != nil {
+			response_dto.Error = err.Error()
+			return
+		}
+		cmd := "cd " + properties.REPOSITORY + " && tar xzf " + tgzFile + " . && rm " + tgzFile
+		exec_local_cmd(response_dto, cmd)
+	}
 }
 
 func StopProcess(response_dto *ResponseDto, process_name string) {
@@ -148,32 +173,28 @@ func StopProcess(response_dto *ResponseDto, process_name string) {
 	exec_local_cmd(response_dto, cmd)
 }
 
-func IsStarted(response_dto *ResponseDto, process_name string) (string, string){
-	cmd := "PID=`pidof "+process_name+"` && [ -n \"$PID\" ] && echo True || echo False"
-	return syscommand.ExecComplexCmd(cmd)
+func IsStarted(process_name string) bool{
+	cmd := "PID=`pidof "+process_name+"` && [ -n \"$PID\" ] && echo \"True\" || echo \"False\""
+	response, _ := syscommand.ExecComplexCmd(cmd)
+	logger.Log.Debug("RESPONSE:"+response+")")
+	if (strings.Contains(response, "True")){
+		return true
+	}
+	if (response == "False"){
+		logger.Log.Debug("444")
+		return false
+	}
+	return false
 }
 
-func IsDeployed(response_dto *ResponseDto, binaryName string) (string, string){
-	cmd :="if [ -f "+binaryName+" ] ; then echo \"True\" ; else echo \"False\" ; fi"
-	return syscommand.ExecComplexCmd(cmd)
+func IsDeployed(binaryName string) bool{
+	cmd :="if [ -f "+properties.REPOBIN+"/"+binaryName+" ] ; then echo \"True\" ; else echo \"False\" ; fi"
+	resp, err := syscommand.ExecComplexCmd(cmd)
+	if (err != "") || (strings.Contains(resp ,"False")){
+		return false
+	}
+	return true
 }
-
-
-func Download(fileName, content string)(string, error){
-	logger.Log.Debug("Write file: "+ fileName)
-	decoded := make([]byte, b64.StdEncoding.DecodedLen(len(content)))
-	if _, err := b64.StdEncoding.Decode(decoded, []byte(content)); err != nil {
-		return "",err
-	}
-	if err := ioutil.WriteFile(fileName, decoded, 0644); err != nil {
-		return "",err
-	}
-	if err := syscommand.Uncompress(fileName, "/tmp/var/hyperledger"); err != nil {
-		return "",err
-	}
-	return fileName + " upload on agent", nil
-}
-
 
 func GenerateSysInfoMessage(agentName string) (*SysInfoDto, error) {
 	info, err := syscommand.GetSystemStatus()
@@ -182,7 +203,7 @@ func GenerateSysInfoMessage(agentName string) (*SysInfoDto, error) {
 		logger.Log.Error(err)
 	}
 	sysInfoDto.SetInfo(info)
-	logger.Log.Debug("Send system info: "+sysInfoDto.ToStr())
+	logger.Log.Debug("Send system info: "+ToJsonStr(sysInfoDto))
 	return sysInfoDto, err
 }
 

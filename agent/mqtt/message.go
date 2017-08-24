@@ -7,6 +7,7 @@ import (
 	"github.com/pascallimeux/admhyp/agent/syscommand"
 	"github.com/pascallimeux/admhyp/agent/logger"
 	"strconv"
+	"github.com/pascallimeux/admhyp/agent/properties"
 )
 
 type orderType int
@@ -28,7 +29,7 @@ const(
        	ISORDERERSTARTED                // 13
        	ISORDERERDEPLOYED		// 14
 	STOPORDERER			// 15
-	UPLOADINFOSYS			// 16
+	INITENV				// 16
 
 )
 type MessageDto struct {
@@ -46,7 +47,7 @@ func ToJsonStr(obj interface{}) string{
        return string(json_mess)
 }
 
-func (m MessageDto)ToStr() string{
+func (m *MessageDto)ToStr() string{
        str := "AgentId="+m.AgentId
        str = str + " MessageId="+ m.MessageId
        str = str + " Created="+m.Created.String()
@@ -62,7 +63,7 @@ type OrderDto struct {
        Args           []string
 }
 
-func (o OrderDto)ToStr() string{
+func (o *OrderDto)ToStr() string{
        str := "AgentId="+o.AgentId
        str = str + " MessageId="+ o.MessageId
        str = str + " Created="+o.Created.String()
@@ -81,7 +82,7 @@ type ResponseDto struct {
 }
 
 
-func (r ResponseDto)ToStr() string{
+func (r *ResponseDto)ToStr() string{
        str := "AgentId="+r.AgentId
        str = str + " MessageId="+ r.MessageId
        str = str + " Created="+r.Created.String()
@@ -91,43 +92,45 @@ func (r ResponseDto)ToStr() string{
 }
 
 type SysInfoDto struct {
-	MessageId      string
-       AgentId        string
-       Created        time.Time
-       TotalMemory	float64
-       FreeMemory      	float64
-       UsedMemory      	float64
-       TotalDisk       	float64
-       FreeDisk        	float64
-       UsedDisk		float64
-       CpusUtilisation 	[]float64
-       Ca_deployed     	bool
-       Ca_started	bool
-       Orderer_deployed	bool
-       Orderer_started	bool
-       Peer_deployed	bool
-       Peer_started	bool
+	MessageId      		string
+        AgentId        		string
+        Created        		time.Time
+        TotalMemory		float64
+        FreeMemory      	float64
+        UsedMemory      	float64
+        TotalDisk       	float64
+        FreeDisk        	float64
+        UsedDisk		float64
+        CpusUtilisation 	[]float64
+        Ca_deployed     	bool
+        Ca_started		bool
+        Orderer_deployed	bool
+        Orderer_started		bool
+        Peer_deployed		bool
+        Peer_started		bool
 }
 
-func (s SysInfoDto)ToStr() string{
-       str := "AgentId="+s.AgentId
-       str = str + " MessageId="+ s.MessageId
-       str = str + " Created="+s.Created.String()
-       return str
+func (s *SysInfoDto)ToStr() string{
+        str := "AgentId="+s.AgentId
+        str = str + " MessageId="+ s.MessageId
+        str = str + " Created="+s.Created.String()
+        return str
 }
 
-func (r SysInfoDto)SetInfo(info syscommand.SysInfo){
-	r.TotalMemory = info.TotalMemory
-	r.FreeMemory=info.FreeMemory
-        r.UsedMemory=info.UsedMemory
-       r.TotalDisk=info.TotalDisk
-       r.FreeDisk=info.FreeDisk
-       r.UsedDisk=info.UsedDisk
-       r.CpusUtilisation=info.CpusUtilisation
-       r.Ca_deployed=info.Ca_deployed
-       r.Ca_started=info.Ca_started
-       r.Orderer_deployed=info.Orderer_deployed
-       r.Orderer_started=info.Orderer_started
-       r.Peer_deployed=info.Peer_deployed
-       r.Peer_started=info.Peer_started
+func (s *SysInfoDto)SetInfo(info syscommand.SysInfo){
+	s.TotalMemory=info.TotalMemory
+	s.FreeMemory=info.FreeMemory
+        s.UsedMemory=info.UsedMemory
+        s.TotalDisk=info.TotalDisk
+        s.FreeDisk=info.FreeDisk
+        s.UsedDisk=info.UsedDisk
+        s.CpusUtilisation=info.CpusUtilisation
+	s.Ca_deployed=IsDeployed(properties.CABINARYNAME)
+        s.Ca_started=IsStarted(properties.CAPROCESSNAME)
+        s.Orderer_deployed=IsDeployed(properties.ORDERERBINARYNAME)
+        s.Orderer_started=IsStarted(properties.ORDERERPROCESSNAME)
+        s.Peer_deployed=IsDeployed(properties.PEERBINARYNAME)
+        s.Peer_started=IsStarted(properties.PEERPROCESSNAME)
 }
+
+

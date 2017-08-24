@@ -4,7 +4,9 @@ import "time"
 
 const (
 	AGENTFILENAME          = "hyp-agent"
-	REPOSITORY             = "/var/hyperledger"
+	REPOSITORY             = "/tmp/var/hyperledger"
+	REPOBIN		       = REPOSITORY+"/bin"
+	REPOCONF	       = REPOSITORY+"/conf"
 	ACCOUNTNAME            = "orangeadm"
 	SERVICENAME            = "hyp-agent.service"
 	STATUSTOPIC            = "status/"	// status/clientID

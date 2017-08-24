@@ -15,12 +15,6 @@ type SysInfo struct{
 	FreeDisk        	float64
 	UsedDisk		float64
 	CpusUtilisation 	[]float64
-	Ca_deployed     	bool
-	Ca_started		bool
-	Orderer_deployed	bool
-	Orderer_started		bool
-	Peer_deployed		bool
-	Peer_started		bool
 }
 
 func (s SysInfo)ToJsonStr() string{
@@ -59,13 +53,5 @@ func GetSystemStatus() (SysInfo, error) {
 	for idx, cpupercent := range percentage {
 		sysInfo.CpusUtilisation[idx]= cpupercent
         }
-	sysInfo.Ca_deployed = false
-	sysInfo.Ca_started = false
-	sysInfo.Orderer_deployed = false
-	sysInfo.Orderer_started = false
-	sysInfo.Peer_deployed = false
-	sysInfo.Peer_started = false
 	return sysInfo, nil
-
-
 }

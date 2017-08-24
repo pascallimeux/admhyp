@@ -22,7 +22,7 @@ class OrderType(Enum):
     ISORDERERSTARTED  = 13
     ISORDERERDEPLOYED = 14
     STOPORDERER       = 15
-    UPLOADINFOSYS     = 16
+    INITENV           = 16
 
 STATUSTOPIC   = "status/"         # status / clientID           Agent   ---> SysInfo_dto    --->    Manager
 ORDERTOPIC    = "orders/"         # orders / clientID           Manager ---> Order_dto      --->    Agent

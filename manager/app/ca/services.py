@@ -8,6 +8,7 @@ from app.agent.agentBuilder import deploy_Agent
 from app.agent.agentManager import AgentManager
 from app.common.commands import compress_locales_files_4_ca, start_ca
 from app.common.lcmds import exec_local_cmd
+from app.agent.message.messages import OrderType
 from app.ca.model import Ca
 from app.database import get_session
 from app.common.log import get_logger, log_function_call
@@ -57,11 +58,11 @@ class CaServices(Services):
         ca = self.get_ca(name=name)
         agent_manager = AgentManager()
         #exec_local_cmd(compress_locales_files_4_ca())
-        agent_manager.upload_file(agent_name=ca.hostname, source="/tmp/files.tgz", dest="/tmp/var/hyperledger/files.tgz")
+        agent_manager.deployca(agent_name=ca.hostname)
 
     @log_function_call
     def start_ca(self, name):
         ca = self.get_ca(name=name)
         agent_manager = AgentManager()
-        agent_manager.exec_remote_cmd(agent_name=ca.hostname, cmd=start_ca())
+        agent_manager.startca(agent_name=ca.hostname)
 

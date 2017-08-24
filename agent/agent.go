@@ -75,6 +75,7 @@ func(a *Agent) Start() error{
 
 func(a *Agent) sendSystemStatus(){
 	sysInfoDto, err := mqtt.GenerateSysInfoMessage(a.AgentName)
+	logger.Log.Debug(sysInfoDto)
 	if (err == nil) {
 		json_mess := mqtt.ToJsonStr(sysInfoDto)
 		a.commHandler.PublishTopic(properties.STATUSTOPIC + a.AgentName, string(json_mess))
@@ -161,7 +162,7 @@ func (a *Agent) moveAgent(accountName, newpath, agentName string) error{
 		logger.Log.Error(err)
 		return err
 	}
-	cmd0 := "sudo chown "+accountName+"."+accountName+" "+newpath
+	cmd0 := "sudo chown "+accountName+"."+accountName+" -R "+a.Repository
 	_, err = syscommand.ExecCmd(cmd0)
 	if err != nil {
 		logger.Log.Error(err)

@@ -49,7 +49,7 @@ func ExecComplexCmd(cmd string)  (string, string){
 		logger.Log.Error(errors.New(string(out)))
 		return "",string(out)
 	}
-	logger.Log.Debug("out= "+string(out))
+	logger.Log.Debug("out="+string(out))
 	return string(out), ""
 }
 
@@ -74,7 +74,7 @@ func Compress(src, dst string) error {
 }
 
 func Uncompress(tgz, dst string) error{
-	cmd := "tar xzf "+tgz+" "+dst
+	cmd := "cd "+dst+" && tar xzf "+tgz+" ."
 	_, err :=ExecCmd(cmd)
 	return err
 }
