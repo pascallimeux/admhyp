@@ -8,7 +8,7 @@ from app.agent.mqttHandler import MqttHandler
 from app.common.lcmds import exec_local_cmd
 from config import DEFAULTADMNAME, DEFAULTADMPWD
 
-import abc, os, base64
+import abc, os, base64, time
 logger = get_logger()
 
 class Order():
@@ -26,6 +26,9 @@ class Order():
         self.response = response_dto.response
         self.error = response_dto.error
         self.content = response_dto.content
+
+    def to_str(self):
+        return "MessageId={0}, AgentId={1}, Sended={2}, Received={3}, Order={4}, Response={5} ".format(self.messageId, self.agentId, self.sended, self.received, self.order, self.response)
 
 
 class Observer(metaclass=abc.ABCMeta):
@@ -51,6 +54,7 @@ class AgentManager(Observer):
             order = Order(id, order_dto.agentId)
             order.set_order(order_dto)
             self.orders[id]=order
+            logger.info("Order: {}".format(order.to_str()))
 
     def save_response(self, response_dto):
         id = response_dto.messageId
@@ -80,14 +84,43 @@ class AgentManager(Observer):
 
     def exec_remote_cmd(self, agent_name, order, args=[]):
         order_dto = create_order_dto(order=order, args=args)
+        order_id = order_dto.messageId
         order_json = order_dto.to_json()
         logger.info("Send message: {0} to agent: {1} ".format(str(order_dto.order), agent_name))
-        # logger.info("Send {0} message to agent: {1} ".format(mType, agent_name))
         self.save_order(order_dto)
         self.comm_handler.Publish(topic=ORDERTOPIC + agent_name, message_dto=order_json)
+        return order_id
 
     def initenv(self, agent_name, remoteadmlogin=appconf().USERADM):
-        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.INITENV, args=[remoteadmlogin])
+        orderid = self.exec_remote_cmd(agent_name=agent_name, order=OrderType.INITENV, args=[remoteadmlogin])
+        start_time=time.time()
+        while orderid not in self.orders and not timeout:
+            delay = time.time()-start_time
+            if delay > 10000:
+                timeout = True
+            print (delay)
+            time.sleep(0.2)
+        if not timeout:
+            return self.order[orderid].response
+        else:
+            raise Exception("Timeout")
+
+    def stop_agent(self, agent_name):
+        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STOPAGENT)
+
+    def deployca(self, agent_name):
+        tgz_file = "/tmp/files.tgz"
+        code = exec_local_cmd("cd {0}/data && tar czf {1} ./bin/fabric-ca-client "
+                              "./bin/fabric-ca-server ./conf/config.yaml ./conf/fabric-ca-client-config.yaml".format(
+            os.getcwd(), tgz_file))
+        if code != 0:
+            logger.error("Compress files for Ca failled!")
+        else:
+            with open(tgz_file, "rb") as f:
+                encoded = base64.b64encode(f.read())
+                encoded = str(encoded, 'utf-8')
+            self.exec_remote_cmd(agent_name=agent_name, order=OrderType.DEPLOYCA,
+                                 args=["/tmp/var/hyperledger/files.tgz", encoded])
 
     def startca(self, agent_name, hyp_adm_log=DEFAULTADMNAME, hyp_adm_pwd=DEFAULTADMPWD):
         self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STARTCA, args=[hyp_adm_log, hyp_adm_pwd])
@@ -95,33 +128,12 @@ class AgentManager(Observer):
     def stopca(self, agent_name):
         self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STOPCA, args=[])
 
+    def iscastarted(self, agent_name):
+        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISCASTART, args=[])
 
-    def stop_agent(self, agent_name):
-        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STOPAGENT)
+    def iscadeployed(self, agent_name):
+        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISCADEPLOYED, args=[])
 
-    def deployca(self, agent_name):
-        tgz_file = "/tmp/files.tgz"
-        code = exec_local_cmd ("cd {0}/data && tar czf {1} ./bin/fabric-ca-client "
-                "./bin/fabric-ca-server ./conf/config.yaml ./conf/fabric-ca-client-config.yaml".format(os.getcwd(), tgz_file))
-        if code != 0:
-            logger.error("Compress files for Ca failled!")
-        else:
-            with open(tgz_file, "rb") as f:
-                encoded = base64.b64encode(f.read())
-                encoded = str(encoded,'utf-8')
-            self.exec_remote_cmd(agent_name=agent_name, order=OrderType.DEPLOYCA, args=["/tmp/var/hyperledger/files.tgz", encoded])
-
-
-    def deployorderer(self, agent_name):
-        tgz_file = "/tmp/files.tgz"
-        code = exec_local_cmd ("cd {0}/data && tar czf {1} ./bin/orderer ".format(os.getcwd(), tgz_file))
-        if code != 0:
-            logger.error("Compress files for Orderer failled!")
-        else:
-            with open(tgz_file, "rb") as f:
-                encoded = base64.b64encode(f.read())
-                encoded = str(encoded,'utf-8')
-            self.exec_remote_cmd(agent_name=agent_name, order=OrderType.DEPLOYORDERER, args=["/tmp/var/hyperledger/files.tgz", encoded])
 
 
     def deploypeer(self, agent_name):
@@ -135,9 +147,42 @@ class AgentManager(Observer):
                 encoded = str(encoded,'utf-8')
             self.exec_remote_cmd(agent_name=agent_name, order=OrderType.DEPLOYPEER, args=["/tmp/var/hyperledger/files.tgz", encoded])
 
-    def iscastarted(self, agent_name):
-        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISCASTART, args=[])
+    def startpeer(self, agent_name, peer_name, peer_port="7051", mode="DEBUG"):
+        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STARTPEER, args=[peer_name, mode, peer_port])
 
-    def iscadeployed(self, agent_name):
-        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISCADEPLOYED, args=[])
+    def stoppeer(self, agent_name):
+        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STOPPEER, args=[])
+
+    def ispeerstarted(self, agent_name):
+        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISPEERSTART, args=[])
+
+    def ispeerdeployed(self, agent_name):
+        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISPEERDEPLOYED, args=[])
+
+
+    def deployorderer(self, agent_name):
+        tgz_file = "/tmp/files.tgz"
+        code = exec_local_cmd("cd {0}/data && tar czf {1} ./bin/orderer ".format(os.getcwd(), tgz_file))
+        if code != 0:
+            logger.error("Compress files for Orderer failled!")
+        else:
+            with open(tgz_file, "rb") as f:
+                encoded = base64.b64encode(f.read())
+                encoded = str(encoded, 'utf-8')
+            self.exec_remote_cmd(agent_name=agent_name, order=OrderType.DEPLOYORDERER,
+                                 args=["/tmp/var/hyperledger/files.tgz", encoded])
+
+    def startoderer(self, agent_name):
+        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STARTORDERER, args=[])
+
+    def stoporderer(self, agent_name):
+        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STOPORDERER, args=[])
+
+    def isordererstarted(self, agent_name):
+        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISORDERERSTART, args=[])
+
+    def isordererdeployed(self, agent_name):
+        self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISORDERERDEPLOYED, args=[])
+
+
 

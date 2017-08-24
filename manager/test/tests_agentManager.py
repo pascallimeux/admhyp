@@ -12,14 +12,16 @@ from app.agent.message.messages import OrderType
 import base64
 from app.common.lcmds import exec_local_cmd
 
+LOCALAGENT='127.0.0.1'
+
 class mqttTest(unittest.TestCase):
 
+
     def test_1(self):
-        agent_name = "127.0.0.1"
         caService = CaServices()
         #caService.create_ca(name=agent_name, hostname="127.0.0.1", remotepassword="pascal")
         agent_manager = AgentManager()
-        agent_manager.send_message(agent_name=agent_name, mType=MessageType.EXEC, mContent=['method', 'arg1', 'arg2', 'arg3'])
+        agent_manager.send_message(agent_name=LOCALAGENT, mType=MessageType.EXEC, mContent=['method', 'arg1', 'arg2', 'arg3'])
         time.sleep(20)
         agent_manager.send_message(agent_name=agent_name, mType=MessageType.STOP, mBody="Hello Agent....")
         time.sleep(5)
@@ -41,6 +43,12 @@ class mqttTest(unittest.TestCase):
         ordererService.create_orderer(name="orderer1", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
         caService.create_ca(name="ca1", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
         peerService.create_peer(name="peer1", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
+
+    def test_initenv(self):
+        agent_manager = AgentManager()
+        agent_manager.initenv(agent_name=LOCALAGENT)
+        time.sleep(5)
+        agent_manager.stop_listener()
 
     def test_deploy_ca(self):
         caService = CaServices()
