@@ -12,7 +12,7 @@ def generateID() :
 	return ''.join(random.choice('0123456789ABCDEF') for i in range(16))
 
 def create_order_dto(order, args):
-    date = arrow.utcnow() # same GO date ormat
+    date = arrow.now() # same GO date ormat
     messageId = generateID()
     agentId = appconf().AGENTID
     order_dto = Order_dto(id=messageId, agentId=agentId, date=date, order=order, args=args)

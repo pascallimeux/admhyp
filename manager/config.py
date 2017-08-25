@@ -22,6 +22,7 @@ LOCALLOGIN = getpass.getuser()
 DEFAULTADMNAME="admin"
 DEFAULTADMPWD="orange2017!"
 
+MAXDELAYTORECEIVERESPONSE = 10
 # hyperledger tag version for github
 HYP_TAG_NAME = "v1.0.0-beta"
 

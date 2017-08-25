@@ -2,118 +2,134 @@ import sys, os, time
 myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, myPath + '/../')
 import unittest
+import threading
+from app.common.services import ObjectNotFoundException
 from app.agent.agentManager import AgentManager
-from app.node.model import Node
 from app.ca.services import CaServices
-from app.node.services import NodeServices
 from app.peer.services import PeerServices
 from app.orderer.services import OrdererServices
-from app.agent.message.messages import OrderType
-import base64
+import  subprocess
+
 from app.common.lcmds import exec_local_cmd
 
-LOCALAGENT='127.0.0.1'
+LOCALAGENT         = "127.0.0.1"
+DEFAULTCANAME      = "ca1"
+DEFAULTPEERNAME    = "peer1"
+DEFAULTORDERERNAME = "orderer1"
+DEFAULTPASSWORD    = "pascal"
+
+class LocalAgent(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.stop = False
+        self.cmd = "/opt/gopath/src/github.com/pascallimeux/admhyp/agent/bin/hyp-agent -name=\""+LOCALAGENT+"\""
+
+    def run(self):
+        process = subprocess.Popen(self.cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        while not self.stop:
+            nextline = process.stdout.readline()
+            if nextline == '' and process.poll() is not None:
+                break
+            sys.stdout.write("AGENT "+LOCALAGENT+": > "+nextline.decode('utf-8'))
+            sys.stdout.flush()
+        output = process.communicate()[0]
+        exitCode = process.returncode
+        if (exitCode == 0):
+            return output
+        else:
+            raise Exception(self.cmd, exitCode, output)
+
+    def Stop(self):
+        self.stop = True
+        time.sleep(.5)
+        cmd = "sudo kill -9 `pidof hyp-agent` 2>/dev/null"
+        exec_local_cmd(cmd)
+
+
 
 class mqttTest(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        #cls.agent = LocalAgent()
+        #cls.agent.start()
+        try:
+            caService = CaServices()
+            caService.get_ca(name = DEFAULTCANAME)
+        except ObjectNotFoundException:
+            caService.create_ca(name=DEFAULTCANAME, hostname=LOCALAGENT, remotepassword=DEFAULTPASSWORD, deploy=False)
+            print("create default ca")
+        try:
+            peerService = PeerServices()
+            peerService.get_peer(name = DEFAULTPEERNAME)
 
-    def test_1(self):
-        caService = CaServices()
-        #caService.create_ca(name=agent_name, hostname="127.0.0.1", remotepassword="pascal")
-        agent_manager = AgentManager()
-        agent_manager.send_message(agent_name=LOCALAGENT, mType=MessageType.EXEC, mContent=['method', 'arg1', 'arg2', 'arg3'])
-        time.sleep(20)
-        agent_manager.send_message(agent_name=agent_name, mType=MessageType.STOP, mBody="Hello Agent....")
-        time.sleep(5)
-        #agent_manager.stop_listener()
-        while True :
-            pass
-        for message in agent_manager.messages:
-            print(message)
+        except ObjectNotFoundException:
+            peerService.create_peer(name=DEFAULTPEERNAME, hostname=LOCALAGENT, remotepassword=DEFAULTPASSWORD, deploy=False)
+            print("create default peer")
+        try:
+            ordererService = OrdererServices()
+            ordererService.get_orderer(name = DEFAULTORDERERNAME)
+        except ObjectNotFoundException:
+            ordererService.create_orderer(name=DEFAULTORDERERNAME, hostname=LOCALAGENT, remotepassword=DEFAULTPASSWORD, deploy=False)
+            print ("create default orderer")
 
-    def test_2(self):
-        service = NodeServices()
-        node = service.get_record(model=Node, name="agent5")
-        print(node)
+    @classmethod
+    def tearDownClass(cls):
+        pass
+        #cls.agent.Stop()
 
-    def test_3(self):
-        caService=CaServices()
-        peerService = PeerServices()
-        ordererService = OrdererServices()
-        ordererService.create_orderer(name="orderer1", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
-        caService.create_ca(name="ca1", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
-        peerService.create_peer(name="peer1", hostname="127.0.0.1", remotepassword="pascal", deploy=False)
+    def setUp(self):
+        self.agent_manager = AgentManager()
 
-    def test_initenv(self):
-        agent_manager = AgentManager()
-        agent_manager.initenv(agent_name=LOCALAGENT)
-        time.sleep(5)
-        agent_manager.stop_listener()
-
-    def test_deploy_ca(self):
-        caService = CaServices()
-        caService.deploy_ca(name="ca1")
+    def tearDown(self):
+        self.agent_manager.stop_listener()
 
 
-    def test_start_ca(self):
-        caService = CaServices()
-        caService.start_ca(name="ca1")
+    def test_stopagentsynchrone(self):
+        response = self.agent_manager.stop_agent(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
+
+    def test_initenvsynchrone(self):
+        start = time.time()
+        response = self.agent_manager.initenv(agent_name=LOCALAGENT, synchrone=True)
+        stop = time.time()
+        print ("execution time: " + str(stop-start))
+        self.assertTrue(response)
 
 
-    def test_4(self):
-        agent_name = "127.0.0.1"
-        agent_manager = AgentManager()
-        agent_manager.exec_remote_cmd(agent_name=agent_name, order=OrderType.STARTCA, args=['orangeadm', 'password'])
-        #agent_manager.send_message(agent_name=agent_name, mType=MessageType.EXEC, mContent=['isstarted', 'hyp-agent'], filename="")
+    def __test_initenv(self):
+        self.agent_manager.initenv(agent_name=LOCALAGENT)
+        time.sleep(1)
 
-    def test_stopagent(self):
-        agent_name = "127.0.0.1"
-        agent_manager = AgentManager()
-        agent_manager.stop_agent(agent_name=agent_name)
+    def test_deploy_casynchrone(self):
+        response = self.agent_manager.deployca(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
 
-    def test_deployca(self):
-        agent_name = "127.0.0.1"
-        agent_manager = AgentManager()
-        agent_manager.deployca(agent_name=agent_name)
-        agent_manager.stop_listener()
+    def test_start_casynchrone(self):
+        response = self.agent_manager.startca(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
 
-    def test_iscastarted(self):
-        agent_name = "127.0.0.1"
-        agent_manager = AgentManager()
-        agent_manager.iscastarted(agent_name=agent_name)
-        time.sleep(5)
-        agent_manager.stop_listener()
+    def test_iscastartedsynchrone(self):
+        response = self.agent_manager.iscastarted(agent_name=LOCALAGENT)
+        self.assertTrue(response)
 
     def test_iscadeployed(self):
-        agent_name = "127.0.0.1"
-        agent_manager = AgentManager()
-        agent_manager.iscadeployed(agent_name=agent_name)
-        time.sleep(5)
-        agent_manager.stop_listener()
+        response = self.agent_manager.iscadeployed(agent_name=LOCALAGENT)
+        self.assertTrue(response)
 
     def test_stopca(self):
-        agent_name = "127.0.0.1"
-        agent_manager = AgentManager()
-        agent_manager.stopca(agent_name=agent_name)
-        time.sleep(10)
-        agent_manager.stop_listener()
+        response = self.agent_manager.stopca(agent_name=LOCALAGENT)
+        self.assertTrue(response)
+        response = self.agent_manager.iscastarted(agent_name=LOCALAGENT)
+        self.assertFalse(response)
 
-    def test_deploypeer(self):
-        agent_name = "127.0.0.1"
-        agent_manager = AgentManager()
-        agent_manager.deploypeer(agent_name=agent_name)
-        agent_manager.stop_listener()
 
-    def test_deployorderer(self):
-        agent_name = "127.0.0.1"
-        agent_manager = AgentManager()
-        agent_manager.deployorderer(agent_name=agent_name)
-        agent_manager.stop_listener()
+    def test_deploypeersynchrone(self):
+        response = self.agent_manager.deploypeer(agent_name=LOCALAGENT)
+        self.assertTrue(response)
 
-    def test_getsysinfo(self):
-        agent_name = "127.0.0.1"
-        caService = CaServices()
-        caService.create_ca(name="ca6", hostname=agent_name, remotepassword="pascal", deploy=False)
-        agent_manager = AgentManager()
-        time.sleep(20)
-        agent_manager.stop_listener()
+    def test_start_agent(self):
+        agent = LocalAgent()
+        agent.start()
+        time.sleep(3)
+        agent.Stop()

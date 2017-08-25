@@ -19,6 +19,10 @@ class MqttHandler(Thread):
         self.client.on_message = self.on_message
         self.client.on_log = self.on_log
         self.client.connect(broker_add, broker_port)
+        self.StartHandler()
+
+    def StartHandler(self):
+        self.stop = False
         self.start()
 
     def run(self):

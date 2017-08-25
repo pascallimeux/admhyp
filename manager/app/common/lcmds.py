@@ -24,6 +24,7 @@ def exec_local_cmd2(cmd):
     except Exception as e:
         logger.error (e)
 
+
 #example "df -k && ls -lisa"
 def exec_local_cmd(cmds):
     logger.debug("Exec local cmd: {}".format(cmds))

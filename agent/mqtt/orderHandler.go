@@ -23,8 +23,8 @@ func ProcessingOrders(bOrder []byte) (*ResponseDto, bool, error) {
 		return nil, false, err
 	}
 	response_dto := &ResponseDto{MessageId:order_dto.MessageId, AgentId:order_dto.AgentId, Created:generateDate(), Order:order_dto.Order }
-
 	order := order_dto.Order
+	logger.Log.Debug("receive order...")
 	switch order{
 	case INITENV:
 		BuildHyperledgerFolders(response_dto, order_dto.Args)
@@ -108,9 +108,9 @@ func exec_local_cmd(response_dto *ResponseDto, cmd string) {
 func BuildHyperledgerFolders(response_dto *ResponseDto, params []string) {
 	username := params[0]
 	group := params[0]
-	cmd := "sudo mkdir -p /var/hyperledger/.keys/admin " +
-	 "&& sudo mkdir -p /var/hyperledger/log " +
-         "&& sudo chown -R "+username+"."+group+" /var/hyperledger "  +
+	cmd := "sudo mkdir -p "+properties.REPOSITORY+"/.keys/admin " +
+	 "&& sudo mkdir -p "+properties.REPOSITORY+"/log " +
+         "&& sudo chown -R "+username+"."+group+" "+properties.REPOSITORY +
          "&& sudo mkdir -p /opt/gopath/src/github.com/hyperledger " +
          "&& sudo chown "+username+"."+group+" /opt/gopath/src/github.com/hyperledger "
 	exec_local_cmd(response_dto, cmd)
