@@ -23,3 +23,6 @@ def get_session():
 
 def init_db():
     Base.metadata.create_all(bind=engine)
+
+def drop_database():
+    Base.metadata.drop_all(bind=engine)

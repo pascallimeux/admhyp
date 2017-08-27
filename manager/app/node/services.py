@@ -24,7 +24,7 @@ class NodeServices(Services):
 
     def update_info(self, sysinfo_dto):
         try:
-            hostname = sysinfo_dto.AgentId
+            hostname = sysinfo_dto.agentId
 
             info = NodeInfo()
             info.totalmem = sysinfo_dto.total_memory
@@ -39,7 +39,7 @@ class NodeServices(Services):
             info.is_ca_started = sysinfo_dto.is_ca_started
             info.is_peer_started = sysinfo_dto.is_peer_started
             info.is_orderer_started = sysinfo_dto.is_orderer_started
-            info.created = arrow.get(sysinfo_dto.Created).datetime.replace(tzinfo=None) # convert to python datatime
+            info.created = arrow.get(sysinfo_dto.created).datetime.replace(tzinfo=None) # convert to python datatime
             nodes = Node.query.filter(Node.hostname == hostname)
             for node in nodes:
                 node.infos.append(info)

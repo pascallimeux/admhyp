@@ -68,4 +68,3 @@ class PeerServices(Services):
             logger.error("{0}".format(e))
             raise Exception("Data not update, database error!")
         return peer
-

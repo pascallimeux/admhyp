@@ -119,6 +119,7 @@ class AgentManager(Observer):
             if delay > MAXDELAYTORECEIVERESPONSE:
                 timeout = True
             time.sleep(0.1)
+
         if not timeout:
             logger.debug("receive response: " + str(self.responses[messageid].response))
             return self.responses[messageid].response
@@ -130,6 +131,8 @@ class AgentManager(Observer):
     def initenv(self, agent_name, remoteadmlogin=appconf().USERADM, synchrone=False):
         return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.INITENV, args=[remoteadmlogin], synchrone=synchrone)
 
+    def removeenv(self, agent_name, synchrone=False):
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.REMOVEENV, args=[], synchrone=synchrone)
 
     def stop_agent(self, agent_name, synchrone=False):
         return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STOPAGENT, synchrone=synchrone)
@@ -149,18 +152,19 @@ class AgentManager(Observer):
                 encoded = str(encoded, 'utf-8')
             return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.DEPLOYCA,
                                  args=["/tmp/var/hyperledger/files.tgz", encoded], synchrone=synchrone)
+        ## AJOUTER ICI ENROLL ADMIN
 
     def startca(self, agent_name, hyp_adm_log=DEFAULTADMNAME, hyp_adm_pwd=DEFAULTADMPWD, synchrone=False):
         return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STARTCA, args=[hyp_adm_log, hyp_adm_pwd], synchrone=synchrone)
 
     def stopca(self, agent_name, synchrone=False):
-        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STOPCA, args=[], synchrone=synchrone)
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STOPCA, synchrone=synchrone)
 
     def iscastarted(self, agent_name, synchrone=False):
-        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISCASTART, args=[], synchrone=synchrone)
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISCASTARTED, synchrone=synchrone)
 
     def iscadeployed(self, agent_name, synchrone=False):
-        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISCADEPLOYED, args=[], synchrone=synchrone)
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISCADEPLOYED, synchrone=synchrone)
 
 
 
@@ -180,13 +184,13 @@ class AgentManager(Observer):
         return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STARTPEER, args=[peer_name, mode, peer_port], synchrone=synchrone)
 
     def stoppeer(self, agent_name, synchrone=False):
-        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STOPPEER, args=[], synchrone=synchrone)
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STOPPEER, synchrone=synchrone)
 
     def ispeerstarted(self, agent_name, synchrone=False):
-        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISPEERSTART, args=[], synchrone=synchrone)
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISPEERSTART, synchrone=synchrone)
 
     def ispeerdeployed(self, agent_name, synchrone=False):
-        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISPEERDEPLOYED, args=[], synchrone=synchrone)
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISPEERDEPLOYED, synchrone=synchrone)
 
 
     def deployorderer(self, agent_name, synchrone=False):
@@ -214,5 +218,27 @@ class AgentManager(Observer):
     def isordererdeployed(self, agent_name, synchrone=False):
         return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ISORDERERDEPLOYED, args=[], synchrone=synchrone)
 
+    def create_admin(self, agent_name, adm_name=DEFAULTADMNAME, adm_pwd=DEFAULTADMPWD, synchrone=False):
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.CREATEADMIN, args=[adm_name, adm_pwd], synchrone=synchrone)
 
+    def register_user(self, agent_name, username, pwd, synchrone=False):
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.REGISTERUSER, args=[agent_name, username, pwd], synchrone=synchrone)
 
+    def register_node(self, agent_name, nodename, nodepwd, synchrone=False):
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.REGISTERNODE, args=[nodename, nodepwd], synchrone=synchrone)
+
+    def register_admin(self, agent_name, adm_name=DEFAULTADMNAME, adm_pwd=DEFAULTADMPWD, synchrone=False):
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.REGISTERADMIN, args=[adm_name, adm_pwd], synchrone=synchrone)
+
+    def renroll_user(self, agent_name, username, pwd, synchrone=False):
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ENROLLUSER, args=[username, pwd], synchrone=synchrone)
+
+    def enroll_node(self, agent_name, nodename, nodepwd, synchrone=False):
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ENROLLNODE, args=[nodename, nodepwd], synchrone=synchrone)
+
+    def enroll_admin(self, agent_name, adm_name=DEFAULTADMNAME, adm_pwd=DEFAULTADMPWD, login= appconf().USERADM, synchrone=False):
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.ENROLLADMIN, args=[adm_name, adm_pwd, login], synchrone=synchrone)
+
+    def startpeer(self, agent_name, peer_name, peer_port="7051", mode="DEBUG", synchrone=False):
+        return self.exec_remote_cmd(agent_name=agent_name, order=OrderType.STARTPEER, args=[peer_name, mode, peer_port],
+                                    synchrone=synchrone)

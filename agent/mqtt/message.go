@@ -30,12 +30,19 @@ const(
        	ISORDERERDEPLOYED		// 14
 	STOPORDERER			// 15
 	INITENV				// 16
-
+	REMOVEENV			// 17
+	REGISTERUSER			// 18
+	REGISTERNODE			// 19
+	REGISTERADMIN			// 20
+	ENROLLUSER			// 21
+	ENROLLNODE			// 22
+	ENROLLADMIN			// 23
 )
+
 type MessageDto struct {
-	MessageId      string
-        AgentId        string
-        Created        time.Time
+	MessageId      string		`json:"messageid"`
+        AgentId        string		`json:"agentid"`
+        Created        time.Time	`json:"created"`
 }
 
 func ToJsonStr(obj interface{}) string{
@@ -56,11 +63,11 @@ func (m *MessageDto)ToStr() string{
 
 
 type OrderDto struct {
-       MessageId      string
-       AgentId        string
-       Created        time.Time
-       Order          orderType
-       Args           []string
+	MessageId      string		`json:"messageid"`
+        AgentId        string		`json:"agentid"`
+        Created        time.Time	`json:"created"`
+	Order          orderType	`json:"order"`
+        Args           []string		`json:"args,omitempty"`
 }
 
 func (o *OrderDto)ToStr() string{
@@ -72,13 +79,13 @@ func (o *OrderDto)ToStr() string{
 }
 
 type ResponseDto struct {
-       MessageId      string
-       AgentId        string
-       Created        time.Time
-       Order          orderType
-       Error          string
-       Response       bool
-       Content        []string
+	MessageId      string		`json:"messageid"`
+        AgentId        string		`json:"agentid"`
+        Created        time.Time	`json:"created"`
+        Order          orderType	`json:"order"`
+        Error          string		`json:"data,omitempty"`
+        Response       bool		`json:"response"`
+        Content        []string		`json:"data,omitempty"`
 }
 
 
@@ -87,27 +94,27 @@ func (r *ResponseDto)ToStr() string{
        str = str + " MessageId="+ r.MessageId
        str = str + " Created="+r.Created.String()
        str = str + " Order="+string(r.Order)
-       str = str + " Order="+strconv.FormatBool(r.Response)
+       str = str + " Response="+strconv.FormatBool(r.Response)
        return str
 }
 
 type SysInfoDto struct {
-	MessageId      		string
-        AgentId        		string
-        Created        		time.Time
-        TotalMemory		float64
-        FreeMemory      	float64
-        UsedMemory      	float64
-        TotalDisk       	float64
-        FreeDisk        	float64
-        UsedDisk		float64
-        CpusUtilisation 	[]float64
-        Ca_deployed     	bool
-        Ca_started		bool
-        Orderer_deployed	bool
-        Orderer_started		bool
-        Peer_deployed		bool
-        Peer_started		bool
+	MessageId      		string		`json:"messageid"`
+        AgentId        		string		`json:"agentid"`
+        Created        		time.Time	`json:"created"`
+        TotalMemory		float64		`json:"totalmemory"`
+        FreeMemory      	float64		`json:"freememory"`
+        UsedMemory      	float64		`json:"usedmemory"`
+        TotalDisk       	float64		`json:"totaldisk"`
+        FreeDisk        	float64		`json:"freedisk"`
+        UsedDisk		float64		`json:"useddisk"`
+        CpusUtilisation 	[]float64	`json:"cpusutilisation"`
+        Ca_deployed     	bool		`json:"cadeployed"`
+        Ca_started		bool		`json:"castarted"`
+        Orderer_deployed	bool		`json:"ordererdeployed"`
+        Orderer_started		bool		`json:"ordererstarted"`
+        Peer_deployed		bool		`json:"peerdeployed"`
+        Peer_started		bool		`json:"peerstarted"`
 }
 
 func (s *SysInfoDto)ToStr() string{

@@ -1,4 +1,4 @@
-from app.database import get_session, init_db
+from app.database import get_session, init_db, drop_database
 from app.common.log import get_logger
 logger = get_logger()
 
@@ -32,3 +32,6 @@ class Services():
             logger.info("Creation of the database")
         except Exception as e:
             logger.error("Database creation failled: {}".format(e))
+
+    def DropDB(self):
+        drop_database()

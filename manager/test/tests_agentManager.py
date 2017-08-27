@@ -1,16 +1,15 @@
 import sys, os, time
+import unittest
 myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, myPath + '/../')
-import unittest
-import threading
-from app.common.services import ObjectNotFoundException
+
+from app.login.services import UserServices
 from app.agent.agentManager import AgentManager
 from app.ca.services import CaServices
 from app.peer.services import PeerServices
 from app.orderer.services import OrdererServices
-import  subprocess
-
-from app.common.lcmds import exec_local_cmd
+from app.common.lcmds import Threading_cmd
+from config import appconf
 
 LOCALAGENT         = "127.0.0.1"
 DEFAULTCANAME      = "ca1"
@@ -18,72 +17,50 @@ DEFAULTPEERNAME    = "peer1"
 DEFAULTORDERERNAME = "orderer1"
 DEFAULTPASSWORD    = "pascal"
 
-class LocalAgent(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.stop = False
-        self.cmd = "/opt/gopath/src/github.com/pascallimeux/admhyp/agent/bin/hyp-agent -name=\""+LOCALAGENT+"\""
-
-    def run(self):
-        process = subprocess.Popen(self.cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        while not self.stop:
-            nextline = process.stdout.readline()
-            if nextline == '' and process.poll() is not None:
-                break
-            sys.stdout.write("AGENT "+LOCALAGENT+": > "+nextline.decode('utf-8'))
-            sys.stdout.flush()
-        output = process.communicate()[0]
-        exitCode = process.returncode
-        if (exitCode == 0):
-            return output
-        else:
-            raise Exception(self.cmd, exitCode, output)
-
-    def Stop(self):
-        self.stop = True
-        time.sleep(.5)
-        cmd = "sudo kill -9 `pidof hyp-agent` 2>/dev/null"
-        exec_local_cmd(cmd)
-
-
+ADMIN1NAME = "adm1"
+USER1NAME  = "user1"
+NODE1NAME  = "node1"
+ADMIN1PWD  = "adm1pwd"
+USER1PWD   = "user1pwd"
+NODE1PWD   = "node1pwd"
 
 class mqttTest(unittest.TestCase):
 
+
+
     @classmethod
     def setUpClass(cls):
-        #cls.agent = LocalAgent()
-        #cls.agent.start()
-        try:
-            caService = CaServices()
-            caService.get_ca(name = DEFAULTCANAME)
-        except ObjectNotFoundException:
-            caService.create_ca(name=DEFAULTCANAME, hostname=LOCALAGENT, remotepassword=DEFAULTPASSWORD, deploy=False)
-            print("create default ca")
-        try:
-            peerService = PeerServices()
-            peerService.get_peer(name = DEFAULTPEERNAME)
-
-        except ObjectNotFoundException:
-            peerService.create_peer(name=DEFAULTPEERNAME, hostname=LOCALAGENT, remotepassword=DEFAULTPASSWORD, deploy=False)
-            print("create default peer")
-        try:
-            ordererService = OrdererServices()
-            ordererService.get_orderer(name = DEFAULTORDERERNAME)
-        except ObjectNotFoundException:
-            ordererService.create_orderer(name=DEFAULTORDERERNAME, hostname=LOCALAGENT, remotepassword=DEFAULTPASSWORD, deploy=False)
-            print ("create default orderer")
+        cls.init_DB()
+        #cls.start_local_agent()
+        caService = CaServices()
+        caService.create_ca(name=DEFAULTCANAME, hostname=LOCALAGENT, remotepassword=DEFAULTPASSWORD, deploy=False)
+        peerService = PeerServices()
+        peerService.create_peer(name=DEFAULTPEERNAME, hostname=LOCALAGENT, remotepassword=DEFAULTPASSWORD, deploy=False)
+        ordererService = OrdererServices()
+        ordererService.create_orderer(name=DEFAULTORDERERNAME, hostname=LOCALAGENT, remotepassword=DEFAULTPASSWORD, deploy=False)
 
     @classmethod
     def tearDownClass(cls):
         pass
         #cls.agent.Stop()
 
+    @classmethod
+    def init_DB(cls):
+        cls.userServices = UserServices()
+        cls.userServices.DropDB()
+        cls.userServices.CreateDB()
+
+    @classmethod
+    def start_local_agent(cls):
+        cmd = "/opt/gopath/src/github.com/pascallimeux/admhyp/agent/bin/hyp-agent -name=\"" + LOCALAGENT + "\""
+        cls.agent = Threading_cmd(cmd=cmd, processname="hyp-agent", username=appconf().USERADM)
+        cls.agent.start()
+
     def setUp(self):
         self.agent_manager = AgentManager()
 
     def tearDown(self):
         self.agent_manager.stop_listener()
-
 
     def test_stopagentsynchrone(self):
         response = self.agent_manager.stop_agent(agent_name=LOCALAGENT, synchrone=True)
@@ -95,6 +72,46 @@ class mqttTest(unittest.TestCase):
         stop = time.time()
         print ("execution time: " + str(stop-start))
         self.assertTrue(response)
+
+    def test_ca(self):
+        response = self.agent_manager.removeenv(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
+
+        response = self.agent_manager.initenv(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
+
+        response = self.agent_manager.iscadeployed(agent_name=LOCALAGENT, synchrone=True)
+        self.assertFalse(response)
+
+        response = self.agent_manager.iscastarted(agent_name=LOCALAGENT, synchrone=True)
+        self.assertFalse(response)
+
+        response = self.agent_manager.deployca(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
+
+        response = self.agent_manager.iscadeployed(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
+
+        response = self.agent_manager.iscastarted(agent_name=LOCALAGENT, synchrone=True)
+        self.assertFalse(response)
+
+        response = self.agent_manager.startca(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
+
+        response = self.agent_manager.iscastarted(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
+
+        response = self.agent_manager.stopca(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
+
+        response = self.agent_manager.iscastarted(agent_name=LOCALAGENT, synchrone=True)
+        self.assertFalse(response)
+
+        response = self.agent_manager.removeenv(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
+
+        response = self.agent_manager.iscadeployed(agent_name=LOCALAGENT, synchrone=True)
+        self.assertFalse(response)
 
 
     def __test_initenv(self):
@@ -110,26 +127,49 @@ class mqttTest(unittest.TestCase):
         self.assertTrue(response)
 
     def test_iscastartedsynchrone(self):
-        response = self.agent_manager.iscastarted(agent_name=LOCALAGENT)
+        response = self.agent_manager.iscastarted(agent_name=LOCALAGENT, synchrone=True)
         self.assertTrue(response)
 
     def test_iscadeployed(self):
-        response = self.agent_manager.iscadeployed(agent_name=LOCALAGENT)
+        response = self.agent_manager.iscadeployed(agent_name=LOCALAGENT, synchrone=True)
         self.assertTrue(response)
 
     def test_stopca(self):
-        response = self.agent_manager.stopca(agent_name=LOCALAGENT)
+        response = self.agent_manager.stopca(agent_name=LOCALAGENT, synchrone=True)
         self.assertTrue(response)
-        response = self.agent_manager.iscastarted(agent_name=LOCALAGENT)
-        self.assertFalse(response)
+
+    def test_sysinfo(self):
+        time.sleep(12)
 
 
     def test_deploypeersynchrone(self):
-        response = self.agent_manager.deploypeer(agent_name=LOCALAGENT)
+        response = self.agent_manager.deploypeer(agent_name=LOCALAGENT, synchrone=True)
         self.assertTrue(response)
 
-    def test_start_agent(self):
-        agent = LocalAgent()
-        agent.start()
-        time.sleep(3)
-        agent.Stop()
+
+    def test_register_admin(self):
+        response = self.agent_manager.initenv(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
+
+        response = self.agent_manager.deployca(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
+
+        response = self.agent_manager.startca(agent_name=LOCALAGENT, synchrone=True)
+        self.assertTrue(response)
+
+        response = self.agent_manager.register_admin(agent_name=LOCALAGENT, adm_name=ADMIN1NAME, adm_pwd=ADMIN1PWD, synchrone=True)
+
+    def test_register_user(self):
+        response = self.agent_manager.register_user(agent_name=LOCALAGENT, username=USER1NAME, pwd=USER1PWD, synchrone=True)
+
+    def test_register_node(self):
+        response = self.agent_manager.regiDEFAULTPASSWORDster_node(agent_name=LOCALAGENT,nodename=NODE1NAME, nodepwd=NODE1PWD , synchrone=True)
+
+    def enroll_admin(self):
+        response = self.agent_manager.enroll_admin(agent_name=LOCALAGENT, adm_name=ADMIN1NAME, adm_pwd=ADMIN1PWD, synchrone=True)
+
+    def enroll_user(self):
+        response = self.agent_manager.renroll_user(agent_name=LOCALAGENT, username=USER1NAME, pwd=USER1PWD, synchrone=True)
+
+    def enroll_node(self):
+        response = self.agent_manager.enroll_node(agent_name=LOCALAGENT, nodename=NODE1NAME, nodepwd=NODE1PWD, synchrone=True)

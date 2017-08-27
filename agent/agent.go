@@ -59,7 +59,7 @@ func(a *Agent) Start() error{
 		return err
 	}
 
-	//a.commHandler.SchedulePub(a.sendSystemStatus, properties.DELAYPUBSYSSTATUS)
+	// a.commHandler.SchedulePub(a.sendSystemStatus, properties.DELAYPUBSYSSTATUS)
 
 	for !a.stopAgent {
 		time.Sleep(properties.AGENTINACTIVATIONDELAY)

@@ -57,7 +57,6 @@ class CaServices(Services):
     def deploy_ca(self, name):
         ca = self.get_ca(name=name)
         agent_manager = AgentManager()
-        #exec_local_cmd(compress_locales_files_4_ca())
         agent_manager.deployca(agent_name=ca.hostname)
 
     @log_function_call
@@ -65,4 +64,51 @@ class CaServices(Services):
         ca = self.get_ca(name=name)
         agent_manager = AgentManager()
         agent_manager.startca(agent_name=ca.hostname)
+
+    @log_function_call
+    def stop_ca(self, name):
+        ca = self.get_ca(name=name)
+        agent_manager = AgentManager()
+        agent_manager.stopca(agent_name=ca.hostname)
+
+    @log_function_call
+    def register_admin(self, name, admname, admpwd):
+        ca = self.get_ca(name=name)
+        agent_manager = AgentManager()
+        agent_manager.register_admin(agent_name=ca.hostname, adm_name=admname, adm_pwd=admpwd)
+
+
+    @log_function_call
+    def register_user(self, name, username, userpwd):
+        ca = self.get_ca(name=name)
+        agent_manager = AgentManager()
+        agent_manager.register_user(agent_name=ca.hostname, username=username, pwd=userpwd )
+
+
+    @log_function_call
+    def register_node(self, name, nodename, nodepwd):
+        ca = self.get_ca(name=name)
+        agent_manager = AgentManager()
+        agent_manager.register_node(agent_name=ca.hostname, nodename=nodename, nodepwd=nodepwd)
+
+
+    @log_function_call
+    def enroll_admin(self, name, admname, admpwd, login):
+        ca = self.get_ca(name=name)
+        agent_manager = AgentManager()
+        agent_manager.enroll_admin(agent_name=ca.hostname, adm_name=admname, adm_pwd=admpwd, login=login)
+
+
+    @log_function_call
+    def enroll_user(self, name, username, userpwd):
+        ca = self.get_ca(name=name)
+        agent_manager = AgentManager()
+        agent_manager.enroll_user(agent_name=ca.hostname, username=username, pwd=userpwd )
+
+
+    @log_function_call
+    def enroll_node(self, name, nodename, nodepwd):
+        ca = self.get_ca(name=name)
+        agent_manager = AgentManager()
+        agent_manager.enroll_node(agent_name=ca.hostname, nodename=nodename, nodepwd=nodepwd)
 

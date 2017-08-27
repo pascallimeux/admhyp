@@ -8,11 +8,41 @@ Created on 22 june 2017
 from subprocess import Popen, PIPE, STDOUT
 import platform
 from app.common.log import get_logger
-
+import threading
+import subprocess
+import sys
+import time
+import pwd
+import os
 logger = get_logger()
 
-def get_plateform():
-    print ("platform:{0}\nname:{1}\nsystem:{2}\nrelease:{3}\npython version:{4}".format(platform.system(), platform.uname(), platform.machine(), platform.release(), platform.python_version()))
+class Threading_cmd(threading.Thread):
+    def __init__(self, cmd, processname, username):
+        threading.Thread.__init__(self)
+        self.stop = False
+        self.cmd = "sudo -u "+username+" "+cmd
+        self.processname = processname
+
+    def run(self):
+        process = subprocess.Popen(self.cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        while not self.stop:
+            nextline = process.stdout.readline()
+            if nextline == '' and process.poll() is not None:
+                break
+            sys.stdout.write(self.processname+": > "+nextline.decode('utf-8'))
+            sys.stdout.flush()
+        #output = process.communicate()[0]
+        #exitCode = process.returncode
+        #if (exitCode == 0):
+        #    return output
+        #else:
+        #    raise Exception(self.cmd, exitCode, output)
+
+    def Stop(self):
+        self.stop = True
+        time.sleep(.5)
+        cmd = "sudo kill -9 `pidof "+self.processname +"` 2>/dev/null"
+        exec_local_cmd(cmd)
 
 def exec_local_cmd2(cmd):
     try:

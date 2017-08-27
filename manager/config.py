@@ -5,7 +5,7 @@ Created on 28 june 2017
 '''
 
 
-import os, logging
+import os, logging, sys
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -52,7 +52,12 @@ class BaseConfig(object):
     AGENTID = "manager"
 
     # sqlite3 BDD file
-    SQLALCHEMY_DATABASE_URI = "sqlite:///{0}/db/admhyp.db".format(ROOT_DIR)
+    print (sys.argv)
+    if '--tests' in sys.argv or 'python -m unittest' in sys.argv:
+        print ('Mode test...')
+        SQLALCHEMY_DATABASE_URI = "sqlite:///{0}/db/admhyp_test.db".format(ROOT_DIR)
+    else:
+        SQLALCHEMY_DATABASE_URI = "sqlite:///{0}/db/admhyp.db".format(ROOT_DIR)
 
     #  timeout for ssh connection
     SSHCNXTIMEOUT = 1

@@ -24,7 +24,7 @@ func ProcessingOrders(bOrder []byte) (*ResponseDto, bool, error) {
 	}
 	response_dto := &ResponseDto{MessageId:order_dto.MessageId, AgentId:order_dto.AgentId, Created:generateDate(), Order:order_dto.Order }
 	order := order_dto.Order
-	logger.Log.Debug("receive order...")
+	logger.Log.Debug("receive order: "+string (int(order)))
 	switch order{
 	case INITENV:
 		BuildHyperledgerFolders(response_dto, order_dto.Args)
@@ -78,6 +78,27 @@ func ProcessingOrders(bOrder []byte) (*ResponseDto, bool, error) {
 	case STOPORDERER:
 		StopProcess(response_dto, properties.ORDERERPROCESSNAME)
 
+	case REMOVEENV:
+		RemoveHyperledgerFolders(response_dto)
+
+	case REGISTERUSER:
+		RegisterUser(response_dto, order_dto.Args)
+
+	case REGISTERNODE:
+		RegisterNode(response_dto, order_dto.Args)
+
+	case REGISTERADMIN:
+		RegisterAdmin(response_dto, order_dto.Args)
+
+	case ENROLLUSER:
+		EnrollUser(response_dto, order_dto.Args)
+
+	case ENROLLNODE:
+		EnrollNode(response_dto, order_dto.Args)
+
+	case ENROLLADMIN:
+		EnrollAdmin(response_dto, order_dto.Args)
+
 	default:
 		UnknownMethod(response_dto, order)
 	}
@@ -103,6 +124,11 @@ func exec_local_cmd(response_dto *ResponseDto, cmd string) {
 	}else{
 		response_dto.Response = true
 	}
+}
+
+func RemoveHyperledgerFolders(response_dto *ResponseDto){
+	cmd := "sudo rm -R "+properties.REPOSITORY
+	exec_local_cmd(response_dto, cmd)
 }
 
 func BuildHyperledgerFolders(response_dto *ResponseDto, params []string) {
@@ -205,6 +231,95 @@ func GenerateSysInfoMessage(agentName string) (*SysInfoDto, error) {
 	sysInfoDto.SetInfo(info)
 	logger.Log.Debug("Send system info: "+ToJsonStr(sysInfoDto))
 	return sysInfoDto, err
+}
+
+func RegisterAdmin(response_dto *ResponseDto, params []string) {
+	if len(params) != 2 {
+		response_dto.Error = "Bad arguments number for method Register admin(" + (strings.Join(params, ","))+")"
+	}else {
+		admName := params[0]
+		admPwd  := params[1]
+		register(response_dto, admName, admPwd, "client")
+	}
+}
+
+
+func RegisterUser(response_dto *ResponseDto, params []string) {
+	if len(params) != 2 {
+		response_dto.Error = "Bad arguments number for method Register user(" + (strings.Join(params, ","))+")"
+	}else {
+		userName := params[0]
+		userPwd  := params[1]
+		register(response_dto, userName, userPwd, "user")
+	}
+}
+
+
+func RegisterNode(response_dto *ResponseDto, params []string) {
+	if len(params) != 2 {
+		response_dto.Error = "Bad arguments number for method Register node(" + (strings.Join(params, ","))+")"
+	}else {
+		nodeName := params[0]
+		nodePwd  := params[1]
+		register(response_dto, nodeName, nodePwd, "peer")
+	}
+}
+
+func register(response_dto *ResponseDto, idname, idpwd, idtype string){
+	isCaStarted := IsStarted(properties.CAPROCESSNAME)
+	if !isCaStarted {
+		response_dto.Error = "Register failled, Ca is not started!"
+	}else {
+		cmd := "cd " + properties.REPOSITORY + " && ./bin/fabric-ca-client register --id.name " + idname + " --id.type " + idtype + " --id.affiliation org1.department1 --id.secret " + idpwd
+		exec_local_cmd(response_dto, cmd)
+	}
+}
+
+func enroll(name, password, repo string) string{
+	cmd := " ./bin/fabric-ca-client enroll -u http://" + name + ":'" + password + "'@localhost:7054 -c " + properties.REPOSITORY + "/.keys/"+repo+"/fabric-ca-client-config.yaml "
+      	return cmd
+}
+
+func EnrollAdmin(response_dto *ResponseDto, params []string) {
+	if len(params) != 3 {
+		response_dto.Error = "Bad arguments number for method Enroll admin(" + (strings.Join(params, ","))+")"
+	}else {
+
+		adminName := params[0]
+		adminPwd  := params[1]
+		login     := params[2]
+		cmd :="cd " + properties.REPOSITORY + enroll(adminName, adminPwd, "admin") +
+		"&& sudo mkdir -p /home/"+login+"/.fabric-ca-client " +
+		"&& sudo cp -R " + properties.REPOSITORY +"/.keys/admin/* /home/"+login+"/.fabric-ca-client"
+		exec_local_cmd(response_dto, cmd)
+	}
+}
+
+
+func EnrollUser(response_dto *ResponseDto, params []string) {
+	if len(params) != 2 {
+		response_dto.Error = "Bad arguments number for method Enroll user(" + (strings.Join(params, ","))+")"
+	}else {
+		username := params[0]
+		password := params[1]
+		cmd := "mkdir -p " + properties.REPOSITORY +"/.msp/"+username +
+		"&& cp " + properties.REPOSITORY + "/conf/fabric-ca-client-config.yaml " + properties.REPOSITORY + "/.msp/{0} " +
+		"&& cd " + properties.REPOSITORY + enroll(username, password, username)
+		exec_local_cmd(response_dto, cmd)
+	}
+}
+
+func EnrollNode(response_dto *ResponseDto, params []string) {
+	if len(params) != 2 {
+		response_dto.Error = "Bad arguments number for method Enroll node(" + (strings.Join(params, ","))+")"
+	}else {
+		username := params[0]
+		password := params[1]
+		cmd := "mkdir -p " + properties.REPOSITORY + "/.keys/"+ username +
+		"&& cp " + properties.REPOSITORY + "/conf/fabric-ca-client-config.yaml " + properties.REPOSITORY + "/.keys/{0} " +
+		"&& cd " + properties.REPOSITORY + enroll(username, password, username)
+		exec_local_cmd(response_dto, cmd)
+	}
 }
 
 func generateID(n int) string{

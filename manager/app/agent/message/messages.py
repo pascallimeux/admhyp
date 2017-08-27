@@ -9,7 +9,7 @@ class OrderType(Enum):
     STOPAGENT         = 0
     DEPLOYCA          = 1
     STARTCA           = 2
-    ISCASTART         = 3
+    ISCASTARTED       = 3
     ISCADEPLOYED      = 4
     STOPCA            = 5
     DEPLOYPEER        = 6
@@ -23,6 +23,13 @@ class OrderType(Enum):
     ISORDERERDEPLOYED = 14
     STOPORDERER       = 15
     INITENV           = 16
+    REMOVEENV         = 17
+    REGISTERUSER      = 18
+    REGISTERNODE      = 19
+    REGISTERADMIN     = 20
+    ENROLLUSER        = 21
+    ENROLLNODE        = 22
+    ENROLLADMIN       = 23
 
 STATUSTOPIC   = "status/"         # status / clientID           Agent   ---> SysInfo_dto    --->    Manager
 ORDERTOPIC    = "orders/"         # orders / clientID           Manager ---> Order_dto      --->    Agent
@@ -39,9 +46,9 @@ class Message_dto ():
 
     def to_json(self):
         dict = {}
-        dict['MessageId']=self.messageId
-        dict['AgentId']=self.agentId
-        dict['Created']=str(self.created)
+        dict['messageid']=self.messageId
+        dict['agentid']=self.agentId
+        dict['created']=str(self.created)
         return str(dict).replace("'", "\"")
 
 class Order_dto(Message_dto):
@@ -57,11 +64,12 @@ class Order_dto(Message_dto):
 
     def to_json(self):
         dict = {}
-        dict['MessageId']=self.messageId
-        dict['AgentId']=self.agentId
-        dict['Created']=str(self.created)
-        dict['Order']=self.order.value
-        dict['Args']=self.args
+        dict['messageid']=self.messageId
+        dict['agentid']=self.agentId
+        dict['created']=str(self.created)
+        dict['order']=self.order.value
+        if len(self.args)>0:
+            dict['args']=self.args
         return str(dict).replace("'", "\"")
 
 
